@@ -1,0 +1,10 @@
+<?php
+
+namespace App;
+
+use Delgont\Armor\RoleRegistrar as BaseRoleRegistrar;
+
+class {{registrar}} extends BaseRoleRegistrar
+{
+    
+}

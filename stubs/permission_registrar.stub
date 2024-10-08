@@ -1,0 +1,18 @@
+<?php
+
+namespace App;
+
+use Delgont\Armor\PermissionRegistrar;
+
+class {{registrar}} extends PermissionRegistrar
+{
+    //define your permissions as constants
+    const CAN_VIEW_USERS = 'can-view-users';
+
+    //permision descriptions
+    public function descriptions()
+    {
+        //return [self::CAN_VIEW_USERS => 'User will be able to view user accounts];
+    }
+    
+}
