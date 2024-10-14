@@ -35,6 +35,8 @@ return [
       * your permission registrars - have permission constants
       */
       App\Roles\ExampleRoleRegistrar::class,
+
+      'redirect_suspended' => route('account.suspended')
     ]
 
 ];

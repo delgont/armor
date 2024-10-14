@@ -13,6 +13,8 @@ use Delgont\Armor\Http\Middleware\RoleMiddleware;
 use Delgont\Armor\Http\Middleware\UserTypeMiddleware;
 use Delgont\Armor\Http\Middleware\PermissionViaSingleRole;
 use Delgont\Armor\Http\Middleware\DetectIpChange;
+use Delgont\Armor\Http\Middleware\CheckSuspended;
+
 
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\Support\Facades\Blade;
@@ -29,6 +31,7 @@ class ArmorServiceProvider extends ServiceProvider
     public function register()
     {
         app('router')->aliasMiddleware('usertype', UserTypeMiddleware::class);
+        app('router')->aliasMiddleware('check.suspended', CheckSuspended::class);
 
         $this->registerCommands();
 
