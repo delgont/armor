@@ -54,6 +54,15 @@ class UnauthorizedException extends HttpException
         return $exception;
     }
 
+    public static function forNoRoleAssigned(): self
+    {
+        $message = 'User does not have the right role to access this resource, no role assigned';
+
+        $exception = new static(403, $message, null, []);
+        return $exception;
+    }
+
+
 
     public static function forRolesOrPermissions(array $rolesOrPermissions): self
     {

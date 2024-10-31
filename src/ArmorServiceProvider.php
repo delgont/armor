@@ -9,6 +9,8 @@ use Illuminate\Routing\Router;
 use Delgont\Armor\Concerns\RegistersCommands;
 
 use Delgont\Armor\Http\Middleware\PermissionMiddleware;
+use Delgont\Armor\Http\Middleware\RolePermissionMiddleware;
+
 use Delgont\Armor\Http\Middleware\RoleMiddleware;
 use Delgont\Armor\Http\Middleware\UserTypeMiddleware;
 use Delgont\Armor\Http\Middleware\PermissionViaSingleRole;
@@ -52,6 +54,8 @@ class ArmorServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
         
         $router->aliasMiddleware('permission', PermissionMiddleware::class);
+        $router->aliasMiddleware('role.permission', RolePermissionMiddleware::class);
+
         $router->aliasMiddleware('role', RoleMiddleware::class);
         $router->aliasMiddleware('hasRole', RoleMiddleware::class);
         $router->aliasMiddleware('permissionViaSingleRole', PermissionViaSingleRole::class);
@@ -88,14 +92,65 @@ class ArmorServiceProvider extends ServiceProvider
             list($role, $guard) = explode(',', $arguments.',');
             return "<?php if(auth({$guard})->user()->hasRole({$role})): ?>";
         });
+
         Blade::directive('elsehasRole', function ($arguments) {
             list($role, $guard) = explode(',', $arguments.',');
 
             return "<?php elseif(auth({$guard})->user()->hasRole({$role})): ?>";
         });
+
         Blade::directive('endhasRole', function () {
             return '<?php endif; ?>';
         });
+
+
+        //User Type Directive
+        Blade::directive('usertype', function ($arguments) {
+            return "<?php if(auth()->check() && in_array(auth()->user()->user_type, explode('|', $arguments))): ?>";
+        });
+    
+        Blade::directive('elseusertype', function () {
+            return '<?php else: ?>';
+        });
+    
+        Blade::directive('endusertype', function () {
+            return '<?php endif; ?>';
+        });
+
+
+        // New permission directive with delimiter support and default guard
+        Blade::directive('can', function ($arguments) {
+            list($permissions, $guard) = explode(',', $arguments.',');
+            return "<?php if( auth({$guard})->check() && auth({$guard})->user()->hasAnyPermission(explode('|', {$permissions})) ): ?>";
+        });
+
+        Blade::directive('elsecan', function () {
+            return '<?php else: ?>';
+        });
+
+        Blade::directive('endcan', function () {
+            return '<?php endif; ?>';
+        });
+
+
+        // User role directive - check if the user
+        Blade::directive('rolecan', function ($arguments) {
+            list($permissions, $guard) = explode(',', $arguments.',');
+            return "<?php if( auth({$guard})->check() && auth()->user()->role && auth()->user()->role->hasAnyPermission(explode('|', {$permissions})) ): ?>";
+        });
+
+        Blade::directive('elserolecan', function () {
+            return '<?php else: ?>';
+        });
+
+        Blade::directive('endrolecan', function () {
+            return '<?php endif; ?>';
+        });
+
+
+
+
+
     }
 
   

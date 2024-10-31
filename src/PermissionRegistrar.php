@@ -33,9 +33,10 @@ abstract class PermissionRegistrar
 
     public function sync()
     {
-        $permissionGroup = ($this->getGroup()) ? PermissionGroup::firstOrCreate([
-            'name' => $this->getGroup()
-        ],['name' => get_class($this), 'registrar' => get_class($this)]) : null;
+        $permissionGroup = PermissionGroup::firstOrCreate([
+            'name' => $this->getGroup() ?? get_class($this),
+            'registrar' => get_class($this)
+        ],['name' => $this->getGroup() ?? get_class($this), 'registrar' => get_class($this)]);
 
         $permissions = $this->getPermissions();
 

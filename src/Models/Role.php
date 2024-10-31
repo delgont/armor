@@ -14,11 +14,13 @@ use Delgont\Armor\Models\RoleGroup;
 
 use Delgont\Armor\Contracts\Role as RoleContract;
 
-class Role extends Model implements RoleContract
+class Role extends Model
 {
-  use ModelHasPermissions;
-
-  protected $fillable = ['name'];
+    use ModelHasPermissions;
+    
+    protected $fillable = ['name'];
+    
+    protected $permissionsCachePrefix = 'role_permissions_';
 
 
     public function permissions(): BelongsToMany

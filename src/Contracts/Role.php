@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 interface Role
 {
+
     /**
      * Role may have permissions
      *

@@ -2,18 +2,32 @@
 
 namespace Delgont\Armor;
 
+
+use Delgont\Armor\Events\PermissionsSynchronized;
+
+
+
 class AuthManager
 {
     public function syncPermissions() : string
     {
-        $permissions =  config('armor.permission_registrars');
-        
+
+        $permissions = config('armor.permission_registrars');
+
         if (is_array($permissions) && count($permissions) > 0) {
             foreach ($permissions as $permission) {
-                app($permission)->sync();
+                // Check if the class exists
+                if (class_exists($permission)) {
+                    app($permission)->sync();
+                } else {
+                    // Log or handle the missing class if needed
+                    \Log::warning("Permission registrar class {$permission} does not exist.");
+                }
             }
+            //PermissionsSynchronized Event Here
+            
             return 'Permissions successfully synchronized';
-        }else{
+        } else {
             return 'There are no permissions to sync';
         }
     }

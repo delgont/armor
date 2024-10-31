@@ -114,7 +114,6 @@ trait ModelHasRoles
      *
      * Alias to hasRole() but without Guard controls
      *
-     * @param string|int|array|\Spatie\Permission\Contracts\Role|\Illuminate\Support\Collection $roles
      *
      * @return bool
      */

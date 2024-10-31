@@ -23,6 +23,20 @@ class PermissionMiddleware
             throw UnauthorizedException::notLoggedIn();
         }
 
+        // Normalize permissions into an array
+        $permissions = is_array($permission) ? $permission : explode(config('armor.permission_delimiter', '|'), $permission);
+        
+        // Check if user has any of the required permissions
+        $user = $authenticated->user();
+        $hasPermission = $user->hasAnyPermission(...$permissions);
+
+        if (!$hasPermission) {
+            throw UnauthorizedException::forPermissions($permissions);
+        }
+
+        return $next($request);
+
+        /** 
         $permissions = is_array($permission)
         ? $permission
         : explode(config('permissions.delimiter', '|'), $permission);
@@ -41,6 +55,7 @@ class PermissionMiddleware
         }
 
         throw UnauthorizedException::forPermissions($permissions);
+        */
         
     }
 }

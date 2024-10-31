@@ -15,6 +15,12 @@ use Delgont\Armor\Console\Commands\SyncRole;
 use Delgont\Armor\Console\Commands\MakePermissionRegistrar;
 use Delgont\Armor\Console\Commands\MakeRoleRegistrar;
 use Delgont\Armor\Console\Commands\RoleCacheCommand;
+use Delgont\Armor\Console\Commands\GiveAllPermissionsToUser;
+use Delgont\Armor\Console\Commands\DenyAllPermissionsFromUser;
+
+use Delgont\Armor\Console\Commands\GiveAllPermissionsToRole;
+use Delgont\Armor\Console\Commands\DenyAllPermissionsFromRole;
+
 
 
 trait RegistersCommands
@@ -29,7 +35,11 @@ trait RegistersCommands
             SyncRole::class,
             MakePermissionRegistrar::class,
             MakeRoleRegistrar::class,
-            RoleCacheCommand::class
+            RoleCacheCommand::class,
+            GiveAllPermissionsToUser::class,
+            DenyAllPermissionsFromUser::class,
+            GiveAllPermissionsToRole::class,
+            DenyAllPermissionsFromRole::class
         ]);
     }
 }

@@ -4,7 +4,7 @@ namespace Delgont\Armor\Console\Commands;
 
 use Illuminate\Console\Command;
 
-use Delgont\Armor\ArmorManager;
+use Delgont\Armor\AuthManager;
 
 class SyncPermission extends Command
 {
@@ -13,7 +13,7 @@ class SyncPermission extends Command
      *
      * @var string
      */
-    protected $signature = 'permission:sync';
+    protected $signature = 'permissions:sync';
 
     /**
      * The console command description.
