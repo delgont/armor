@@ -122,11 +122,11 @@ trait ModelHasPermissions
 
         $model = $this->getModel();
         if($model->exists){
-            $this->permissions()->sync($permissions['ids'], true);
+            $this->permissions()->sync($array['ids'], true);
         }
 
         //Remove permissions from cache
-        $this->invalidatePermissionCache($permissions['names']);
+        $this->invalidatePermissionCache($array['names']);
 
         return $this;
     }

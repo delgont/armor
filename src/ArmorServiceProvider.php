@@ -36,7 +36,6 @@ class ArmorServiceProvider extends ServiceProvider
         app('router')->aliasMiddleware('check.suspended', CheckSuspended::class);
 
         $this->registerCommands();
-
         
     }
 
@@ -136,7 +135,7 @@ class ArmorServiceProvider extends ServiceProvider
         // User role directive - check if the user
         Blade::directive('rolecan', function ($arguments) {
             list($permissions, $guard) = explode(',', $arguments.',');
-            return "<?php if( auth({$guard})->check() && auth()->user()->role && auth()->user()->role->hasAnyPermission(explode('|', {$permissions})) ): ?>";
+            return "<?php if( auth({$guard})->check() && auth({$guard})->user()->role && auth({$guard})->user()->role->hasAnyPermission(explode('|', {$permissions})) ): ?>";
         });
 
         Blade::directive('elserolecan', function () {

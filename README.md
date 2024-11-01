@@ -55,6 +55,7 @@
 
 The @usertype Blade directive allows you to check if the currently authenticated user matches any of the specified user types. This directive can be used to conditionally render content based on the user's type, providing a flexible way to manage permissions and access control in your views.
 
+
 <h6 style="color: #FF6347;" id="usertype-blade-directive">Usage</h6>
 
 ```php
@@ -65,7 +66,9 @@ The @usertype Blade directive allows you to check if the currently authenticated
 @endusertype
 ```
 
-<h6 style="color: #FF6347;" id="can-blade-directive">Usage</h6>
+<h5 style="color: #FF6347;" id="can-blade-directive">@can Blade Directive</h5>
+
+<h6 style="color: #FF6347;">Usage</h6>
 
 ```php
 @can('permissionone|permissiontwo')
@@ -75,9 +78,17 @@ The @usertype Blade directive allows you to check if the currently authenticated
 @endcan
 ```
 
-<h6 style="color: #FF6347;" id="rolecan-blade-directive">Usage</h6>
+<h5 style="color: #FF6347;" id="rolecan-blade-directive">@rolecan Blade Directive</h5>
+
 
 The @rolecan directive allows you to check if the authenticated user's role has the specified permissions before granting access to a particular section of your Blade view. This directive is particularly useful for managing access control based on user roles and their associated permissions.
+
+Your Authenticatable models must be limited to a single role, use `Delgont\Armor\Concerns\ModelHasSingleRole` and migrations must have `role_id` 
+
+
+
+<h6 style="color: #FF6347;"">Usage</h6>
+
 
 ```php
 @rolecan('permissionone|permissiontwo')

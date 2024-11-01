@@ -18,7 +18,7 @@ class Role extends Model
 {
     use ModelHasPermissions;
     
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'description'];
     
     protected $permissionsCachePrefix = 'role_permissions_';
 
