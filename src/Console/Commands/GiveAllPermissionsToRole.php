@@ -16,15 +16,23 @@ class GiveAllPermissionsToRole extends Command
     {
         // Retrieve the role by name
         $roleId = $this->argument('roleId');
-        $role = Role::whereId($roleId)->first();
+        $role = Role::whereId($roleId)->orWhere('name', $roleId)->first();
+
 
         if (!$role) {
-            $this->error('Role not found: ' . $roleName);
+            $this->error('Role not found: ' . $roleId);
             return 1; // Return error code
         }
 
         // Get all permissions
         $permissions = Permission::all();
+
+        if (!count($permissions) > 0) {
+            # code...
+            $this->info('No permissions to sync ....');
+            return;
+        }
+
 
         // Assign all permissions to the role
         $role->givePermissionTo($permissions);

@@ -90,6 +90,9 @@ trait ModelHasPermissions
 
     public function givePermissionTo(...$permissions)
     {
+        if(!$permissions){
+            return $this;
+        }
         $permissions = collect($permissions)->flatten()->reduce(function($array, $permission){
 
             // Initialize arrays for IDs and names if they don't exist
@@ -122,11 +125,18 @@ trait ModelHasPermissions
 
         $model = $this->getModel();
         if($model->exists){
-            $this->permissions()->sync($array['ids'], true);
+            if (array_key_exists('ids', $permissions)) {
+                # code...
+                $this->permissions()->sync($permissions['ids'], true);
+            }
         }
 
         //Remove permissions from cache
-        $this->invalidatePermissionCache($array['names']);
+        if (array_key_exists('names', $permissions)) {
+            # code...
+            $this->invalidatePermissionCache($permissions['names']);
+
+        }
 
         return $this;
     }

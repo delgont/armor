@@ -11,7 +11,6 @@ class AuthManager
 {
     public function syncPermissions() : string
     {
-
         $permissions = config('armor.permission_registrars');
 
         if (is_array($permissions) && count($permissions) > 0) {
