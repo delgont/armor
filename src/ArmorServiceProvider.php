@@ -21,6 +21,8 @@ use Delgont\Armor\Http\Middleware\CheckSuspended;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\Support\Facades\Blade;
 
+use Illuminate\Support\Str;
+
 
 class ArmorServiceProvider extends ServiceProvider
 {
@@ -105,7 +107,8 @@ class ArmorServiceProvider extends ServiceProvider
 
         //User Type Directive
         Blade::directive('usertype', function ($arguments) {
-            return "<?php if(auth()->check() && in_array(auth()->user()->user_type, explode('|', $arguments))): ?>";
+            list($usertypes, $guard) = explode(',', $arguments.',');
+            return "<?php if(auth()->check() && in_array(Str::lower(end(explode('\\', auth({$guard})->user()->usertype))), explode('|', $usertypes))): ?>";
         });
     
         Blade::directive('elseusertype', function () {
