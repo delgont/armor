@@ -15,7 +15,7 @@ trait MultiAuthCredentials
      */
     protected function multiAuthCredentials(Request $request)
     {
-        $username = filter_var($request->{method_exists($this, 'username') ? $this->username() : 'email'}, FILTER_VALIDATE_EMAIL) ? 'email' : config($this->getConfig().'.username', 'name');
+        $username = filter_var($request->{method_exists($this, 'username') ? $this->username() : 'email'}, FILTER_VALIDATE_EMAIL) ? 'email' : $this->getSecondaryColumn();
 
         return [
          $username => $request->{method_exists($this, 'username') ? $this->username() : 'email'},
@@ -24,12 +24,12 @@ trait MultiAuthCredentials
     }
 
     /**
-     * Get the configuration file where the username is defined
+     * Get the second colum that will be used with email and the second field by default name column defined in the user table
      * @return string
      */
-    protected function getConfig()
+    protected function getSecondaryColumn ()
     {
-        return 'auth';
+        return 'name';
     }
 
 }

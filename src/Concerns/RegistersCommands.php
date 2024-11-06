@@ -21,6 +21,8 @@ use Delgont\Armor\Console\Commands\DenyAllPermissionsFromUser;
 use Delgont\Armor\Console\Commands\GiveAllPermissionsToRole;
 use Delgont\Armor\Console\Commands\DenyAllPermissionsFromRole;
 
+use Delgont\Armor\Console\Commands\MakeModulePermissionRegistrar;
+
 
 
 trait RegistersCommands
@@ -39,7 +41,8 @@ trait RegistersCommands
             GiveAllPermissionsToUser::class,
             DenyAllPermissionsFromUser::class,
             GiveAllPermissionsToRole::class,
-            DenyAllPermissionsFromRole::class
+            DenyAllPermissionsFromRole::class,
+            MakeModulePermissionRegistrar::class,
         ]);
     }
 }

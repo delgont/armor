@@ -1,10 +1,26 @@
-<p align="left"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+<h1>Delgont Armor</h1>
+
+Armor is a Laravel package that provides a powerful access control system through roles and permissions, along with flexible backend authentication. This package allows login using either email, username, phone number, or another identifier, based on your preference.
+
+Furthermore, the package enables user type-based access control through the HasUserTypes trait, offering fine-grained control over user access to specific routes and Blade views.
+
+## Features
+1. User Type-based Access Control - Enables route and Blade access based on user types.
+2. Multi-Authentication Credentials - Supports login with different fields, such as email, username, or phone number.
+3. Role and Permission Management - Assign roles and permissions to control access at a more granular level.
 
 
-<h1 style="color: #FFD700 ;">Delgont Armor</h1>
+`Email or username authentication` `Access control using roles and permissions.`
+
+`Composer` `Laravel Framework 11.0+`
+
+## Table Of Contents
 
 <ul>
+  <li><a href="#installation">Installation</a></li>
   <li><a href="#configuration">Armor Configuration</a></li>
+  <li><a href="#multiauth">Multi-Credentials Authenticationion</a></li>
+  <li><a href="#usertype">User Type-Based Access Control</a></li>
   <li><a href="#blade-directives">Blade Directives</a></li>
   <ul>
   <li><a href="#usertype-blade-directive">@usertype Blade Directive</a></li>
@@ -15,6 +31,21 @@
 
 </ul>
 
+
+
+<h2 id="installation">Installation</h2>
+
+To install the Delgont/Armor package, use Composer:
+
+``` composer require delgont/armor ```
+
+After installation, publish the package configuration:
+
+``` php artisan vendor:publish --provider="Delgont\Armor\ArmorServiceProvider" ```
+
+This command will publish the config/armor.php file, where you can set up custom configurations.
+
+---
 
 
 
@@ -46,6 +77,187 @@
 'permission_registrars' => [
     App\Permissions\ExamplePermissionRegistrar::class,
 ],
+```
+
+---
+
+<h2 id="multiauth">Adding Multi-Credentials Authenticationion</h2>
+
+To allow users to log in with different credentials, such as email or username, email or phone.
+
+1. Import the Trait: In your LoginController, import `the MultiAuthCredentials trait` :
+
+```php
+use Delgont\Armor\Concerns\MultiAuthCredentials;
+```
+
+2.  Setup the Login Field: In your LoginController, set up a method to allow dynamic field selection, if you want  the user to login using phone or email then you can choose this function to retunr `phone_email` and this should be defined as the name for you login form input
+
+```php
+public function username()
+{
+    return 'username_email';
+}
+```
+
+3. Define the `username` column name that will be used by Overriding  the getSecondaryColumn() function in your LoginController. This function specifies the second column that will be used along with email during authentication. By default, it returns 'name', but you can modify it to use the column you intend to use.
+
+```php
+ /**
+ * Get the second colum that will be used with email and the second field by default name column defined in the user table
+ * @return string
+ */
+protected function getSecondaryColumn ()
+{
+    return 'name';
+}
+```
+
+4. Implement Multi-Credentials: Use the `multiAuthCredentials()` method to check the user’s login input and determine the field (username or email, phone or email) they are attempting to log in with. Override the credentials method in `LoginController` :
+
+```php
+protected function credentials(Request $request)
+{
+    return $this->multiAuthCredentials($request);
+}
+```
+
+5. Login Form Input: Your login form should use the `username_email` field, which allows the user to enter their `username or email ` or `phone_email` if you want to allow login with `phone or email`
+
+```php
+<input type="text" class="form-control @error('username_email') is-invalid @enderror" id="username_email" name="username_email" placeholder="Username or Email" value="{{ old('username_email') }}" />
+```
+
+`LoginController`
+
+
+```php
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Foundation\Auth\ThrottlesLogins;
+
+use Delgont\Armor\Concerns\MultiAuthCredentials;
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
+
+
+class LoginController extends Controller
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Login Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller handles authenticating users for the application and
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
+    |
+    */
+    use AuthenticatesUsers, MultiAuthCredentials, ThrottlesLogins;
+
+    /**
+     * Where to redirect users after login - You can redirect to users default home page
+     *
+     * @var string
+     */
+    protected $redirectTo;
+
+    /**
+     * Create a new controller instance. 
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //Artisan::call('permission:sync');
+        $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Override this method for multi user authentication to work
+     */
+    protected function credentials(Request $request)
+    {
+        return $this->multiAuthCredentials($request);
+    }
+
+
+   
+
+    public function username()
+    {
+        return 'username_email';
+    }
+
+     /**
+     * Get the second colum that will be used with email and the second field by default name column defined in the user table
+     * @return string
+     */
+    protected function getSecondaryColumn ()
+    {
+        return 'name';
+    }
+    
+}
+
+```
+<h2 id="usertype">User Type-Based Access Control</h2>
+
+User type-based access control allows you to restrict specific routes and Blade templates based on user roles, such as "master" or "employee."
+
+
+1. add usertype & user_id columns to your authenticatable migration
+
+```php
+<?php
+..............
+Schema::table('users', function (Blueprint $table) {
+    $table->nullableMorphs('user');
+});
+```
+
+2. Add Delgont\Auth\Concerns\HasUserTypes Trait to user model.
+
+```php
+<?php
+
+namespace App;
+
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Delgont\Cms\Notifications\Auth\ResetPassword as ResetPasswordNotification;
+
+use Delgont\Auth\Concerns\HasUserTypes;
+
+class User extends Authenticatable
+{
+    use Notifiable, HasUserTypes;
+```
+
+3. Your usertype models
+
+```php
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Customer extends Model
+{
+    public function user()
+    {
+        return $this->morphOne('App\User', 'user');
+    }
+}
 ```
 
 
@@ -102,30 +314,9 @@ Your Authenticatable models must be limited to a single role, use `Delgont\Armor
 
 
 
-## Laravel Authentication Backend
-`Composer` `Laravel Framework 6.0+`
-
-## Introduction
-
-Laravel authentication backend that provides the following features.
-- [x] Email or username authentication
-- [x] Access control using roles and permissions.
-- [x] Access control using roles and permissions.
-
-## Installation
-
-``` composer require delgont/auth ```
-
-``` php artisan vendor:publish  --multiauth-config```
-
----
 
 
-## Multi Username Authentication
-`username` ` email`
 
-1. Login Controller.
-> *Create your custom login controller and use* `Delgont\Auth\Concerns\MultiAuthCredentials` . *this will overide the credentials function*
 
 
 ```
@@ -188,138 +379,7 @@ class LoginController extends Controller
   </span>
 @enderror
 ```
-
 ---
-
-## Access Control
-Regulate access to your laravel systems resources, features and functionality.
-
-### Access control basing on user type
-
-<img src="UserTypes-Access-Control.jpg" width="700" />
-
-1. add `usertype` & `user_id` columns to your authenticatable migration 
-
-```php
-<?php
-..............
-Schema::table('users', function (Blueprint $table) {
-    $table->nullableMorphs('user');
-});
-
-```
-
-2. Add `Delgont\Auth\Concerns\HasUserTypes` Trait to user model.
-
-```php
-<?php
-
-namespace App;
-
-use Laravel\Passport\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-
-use Delgont\Cms\Notifications\Auth\ResetPassword as ResetPasswordNotification;
-
-use Delgont\Auth\Concerns\HasUserTypes;
-
-
-
-class User extends Authenticatable
-{
-    use Notifiable, HasUserTypes, ModelHasPermissions, ModelHasSingleRole;
-```
-
-3. Your usertype models
-
-```php
-<?php
-
-namespace App;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Customer extends Model
-{
-    public function user()
-    {
-        return $this->morphOne('App\User', 'user');
-    }
-}
-```
-
-User can have single role or multiple roles
-
-
-`Using role middleware to restrict access`
-
-Use `Delgont\Auth\Concerns\ModelHasRoles` trait on your authenticable model
-
-```php
-<?php
-
-namespace App;
-
-use Laravel\Passport\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-use Delgont\Auth\Concerns\ModelHasRoles;
-
-class User extends Authenticatable
-{
-    /*
-    | Use Delgont\Auth\Concerns\ModelHasRoles trait
-    |
-    */
-    use ModelHasRoles;
-
-
-}
-
-```
-
-> Assigning roles
-
-```php
-# Giving role using role names
-$model->assignRole(['admin','accountant']);
-auth()->user()->assignRole(['admin','accountant']);
-```
-Protecting routes using the role middleware
-```php
-Route::get('/test', 'TestController@test')->middleware('role:admin');
-Route::get('/test', 'TestController@test')->middleware('role:admin|hello');
-```
-
-
-`Using permission middleware to restrict access`
-
-```php
-Route::get('/momo', 'Momo@index')->name('momo')->middleware('permission:access_momo_dashboard');
-```
-
-`Configure your default permissions in the permissions configuration file`
-
-```
-<?php
-
-return [
-    'delimiter' => '|',
-
-    'permissions' => [
-      'manage_users',
-      'access_momo_dashbaord'
-    ]
-];
-`
-
-
-```
 
 <h2 id="artisan-commands" style="color: #1E90FF;">Artisan Commands</h2>
 

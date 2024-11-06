@@ -24,7 +24,6 @@ class AuthManager
                 }
             }
             //PermissionsSynchronized Event Here
-            
             return 'Permissions successfully synchronized';
         } else {
             return 'There are no permissions to sync';

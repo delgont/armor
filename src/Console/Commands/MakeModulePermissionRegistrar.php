@@ -6,14 +6,14 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 
-class MakePermissionRegistrar extends Command
+class MakeModulePermissionRegistrar extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:permissionRegistrar {name}';
+    protected $signature = 'module:make-permissionRegistrar {name} {module}';
 
     /**
      * The console command description.
@@ -40,18 +40,26 @@ class MakePermissionRegistrar extends Command
     public function handle()
     {
         $registrar = $this->argument('name');
+        $module = $this->argument('module');
 
         $registrarClassName = Str::ucfirst($registrar);
          
         $registrarStub = file_get_contents(__DIR__ . '/../../../stubs/permission_registrar.stub');
 
-        $classTargetPath = app_path('/' .$registrar. '.php');
-
+        $classTargetPath = base_path('Modules/'.$module.'/'.class_basename($registrarClassName) . '.php');
+        
         file_put_contents($classTargetPath, strtr($registrarStub, [
-            '{{registrarNamespace}}' => 'App',
+            '{{registrarNamespace}}' => 'Modules\\'.$module,
             '{{registrar}}' => $registrarClassName
         ]));
 
         $this->info('Permission registrar created successfully .....');
+        $this->info($classTargetPath);
+    }
+
+
+    protected function getQualifiedClass($class)
+    {
+        return str_replace('/', '\\', $class);
     }
 }

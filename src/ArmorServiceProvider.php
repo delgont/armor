@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Blade;
 
 use Illuminate\Support\Str;
 
-
 class ArmorServiceProvider extends ServiceProvider
 {
     use RegistersCommands;
@@ -50,7 +49,7 @@ class ArmorServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/armor.php' => config_path('armor.php')
-        ], 'armor');
+        ], 'armor-config');
 
         $router = $this->app->make(Router::class);
         
@@ -105,12 +104,17 @@ class ArmorServiceProvider extends ServiceProvider
         });
 
 
-        //User Type Directive
-        Blade::directive('usertype', function ($arguments) {
-            list($usertypes, $guard) = explode(',', $arguments.',');
-            return "<?php if(auth()->check() && in_array(Str::lower(end(explode('\\', auth({$guard})->user()->usertype))), explode('|', $usertypes))): ?>";
+        Blade::directive('usertype', function ($usertypes, $guard = 'null') {
+            return "<?php 
+                if (auth($guard)->check() && auth($guard)->user()->user_type !== null && 
+                    in_array(
+                        strtolower(last(explode('\\\\', auth($guard)->user()->user_type))),
+                        explode('|', {$usertypes})
+                    )
+                ): 
+            ?>";
         });
-    
+        
         Blade::directive('elseusertype', function () {
             return '<?php else: ?>';
         });
