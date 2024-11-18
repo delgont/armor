@@ -1,4 +1,14 @@
 <?php
+/**
+ * Delgont Armor  (https://delgont.co.ug).
+ *
+ * @link https://github.com/delgont/armor source repository
+ *
+ * @copyright Copyright (c) 2024. Delgont Technologies Co. Ltd (https://delgont.co.ug)
+ *
+ * @license https://opensource.org/licenses/MIT MIT License
+ */
+
 
 namespace Delgont\Armor;
 
@@ -33,8 +43,7 @@ class ArmorServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        app('router')->aliasMiddleware('usertype', UserTypeMiddleware::class);
-        app('router')->aliasMiddleware('check.suspended', CheckSuspended::class);
+        
 
         $this->registerCommands();
         
@@ -60,6 +69,10 @@ class ArmorServiceProvider extends ServiceProvider
         $router->aliasMiddleware('hasRole', RoleMiddleware::class);
         $router->aliasMiddleware('permissionViaSingleRole', PermissionViaSingleRole::class);
         $router->aliasMiddleware('detect.ip.change', DetectIpChange::class);
+
+        $router->aliasMiddleware('usertype', UserTypeMiddleware::class);
+        $router->aliasMiddleware('check.suspended', CheckSuspended::class);
+        $router->aliasMiddleware('track.page-access',  \Delgont\Armor\Http\Middleware\TrackPageAccess::class);
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 

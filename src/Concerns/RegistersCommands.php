@@ -43,6 +43,7 @@ trait RegistersCommands
             GiveAllPermissionsToRole::class,
             DenyAllPermissionsFromRole::class,
             MakeModulePermissionRegistrar::class,
+            \Delgont\Armor\Console\Commands\InstallArmorCommand::class,
         ]);
     }
 }

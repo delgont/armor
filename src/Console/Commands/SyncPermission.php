@@ -40,6 +40,7 @@ class SyncPermission extends Command
     public function handle()
     {
         app(AuthManager::class)->syncPermissions();
+        
         $this->info('Synced');
     }
 }

@@ -27,6 +27,7 @@ Furthermore, the package enables user type-based access control through the HasU
   <li><a href="#can-blade-directive">@can Blade Directive</a></li>
   <li><a href="#rolecan-blade-directive">@rolecan Blade Directive</a></li>
   </ul>
+  <li><a href="#middlewares">Middlewares</a></li>
   <li><a href="#artisan-commands">Artisan Commands</a></li>
 
 </ul>
@@ -381,6 +382,25 @@ class LoginController extends Controller
 ```
 ---
 
+<h2 id="middlewares" style="color: #1E90FF;">Middlewares</h2>
+
+### 1. Track Page Access
+
+`track.page-access:page-name`
+
+This middleware is responsible for tracking the times a page has been access on a Laravel application. It logs information about page views, including the IP address, User-Agent, and visit count for each page. If a user accesses the same page multiple times, the middleware will update the count and store the latest User-Agent information.
+
+#### Usage
+To use this middleware, it should be registered in your app/Http/Kernel.php file or applied directly to specific routes in the routes/web.php file.
+
+```php
+Route::get('/page', function ($pageName) {
+    // Your page logic here
+})->middleware('track.page-access:page-name');
+```
+
+---
+
 <h2 id="artisan-commands" style="color: #1E90FF;">Artisan Commands</h2>
 
 
@@ -402,6 +422,8 @@ php artisan permissions:sync
 php artisan permissions:give-all {userId} Modules\Applicant\Entities\Applicant
 ```
 
-<div style="border: 1px solid #FFA07A; background-color: #3A3A3A; padding:10px; border-radius:5px; color:#FFF;">
-<strong>Note:</strong> User will be able to view total number of students in the dashboard.
-</div>
+```php
+php artisan armor:install
+```
+
+
