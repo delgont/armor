@@ -41,14 +41,16 @@ abstract class PermissionRegistrar
         $permissions = $this->getPermissions();
 
         if (count($permissions) > 0) {
-            foreach ($this->getPermissions() as $key => $permission) {
+            foreach (array_values($this->getPermissions()) as $index => $permission) {
                 Permission::updateOrCreate([
                     'name' => $permission
                 ], [
                     'name' => $permission,
                     'description' => (is_array($this->getDescriptions()) && count($this->getDescriptions()) > 0) ? (array_key_exists($permission, $this->getDescriptions())) ? $this->getDescriptions()[$permission] : null : null,
-                    'permission_group_id' => ($permissionGroup) ? $permissionGroup->id : null
+                    'permission_group_id' => ($permissionGroup) ? $permissionGroup->id : null,
+                    'order' => $index + 1,
                 ]);
+                
             }
             event(new PermissionsSynchronized($permissions));
         }

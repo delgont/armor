@@ -1,9 +1,7 @@
 <?php
-
 namespace Delgont\Armor\Console\Commands;
 
 use Illuminate\Console\Command;
-
 use Delgont\Armor\AuthManager;
 
 class SyncPermission extends Command
@@ -20,7 +18,7 @@ class SyncPermission extends Command
      *
      * @var string
      */
-    protected $description = 'Sync permissions';
+    protected $description = 'Sync permissions with the system';
 
     /**
      * Create a new command instance.
@@ -39,8 +37,25 @@ class SyncPermission extends Command
      */
     public function handle()
     {
-        app(AuthManager::class)->syncPermissions();
-        
-        $this->info('Synced');
+        $this->info('You are about to sync the permissions to your system.');
+
+        // Ask for user confirmation before proceeding
+        if ($this->confirm('Do you wish to proceed with syncing the permissions?', true)) {
+            
+            // If the user confirms, proceed to sync permissions
+            $this->info('Syncing permissions...');
+            
+            // Call the method to sync permissions
+            app(AuthManager::class)->syncPermissions();
+
+            // Provide feedback to the user
+            $this->info('Permissions have been successfully synced.');
+
+        } else {
+            // If the user cancels, provide a message
+            $this->info('Permission sync operation has been canceled.');
+        }
+
+        return Command::SUCCESS;
     }
 }
