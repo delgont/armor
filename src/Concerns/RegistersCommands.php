@@ -44,6 +44,7 @@ trait RegistersCommands
             DenyAllPermissionsFromRole::class,
             MakeModulePermissionRegistrar::class,
             \Delgont\Armor\Console\Commands\InstallArmorCommand::class,
+            \Delgont\Armor\Console\Commands\PruneAuditLogsCommand::class,
         ]);
     }
 }
