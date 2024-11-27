@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Cache;
 trait ModelHasPermissions
 {
 
+     /**
+     * Get the cache store for permissions.
+     *
+     * @return \Illuminate\Contracts\Cache\Repository
+     */
+    protected function getCacheStore()
+    {
+        $cacheStore = config('armor.cache_store', 'file');
+        return Cache::store($cacheStore);
+    }
+
 
     public static function bootHasPermissions()
     {
@@ -46,7 +57,7 @@ trait ModelHasPermissions
     protected function invalidatePermissionCache($permissions)
     {
         foreach ($permissions as $permission) {
-            Cache::forget($this->getPermissionCachePrefix(). $this->id.'_'.$permission);
+            $this->getCacheStore()->forget($this->getPermissionCachePrefix(). $this->id.'_'.$permission);
         }
     }
 
@@ -124,12 +135,18 @@ trait ModelHasPermissions
         }, []);
 
         $model = $this->getModel();
-        if($model->exists){
-            if (array_key_exists('ids', $permissions)) {
-                # code...
-                $this->permissions()->sync($permissions['ids'], true);
-            }
+
+        if ($model->exists && array_key_exists('ids', $permissions)) {
+        $this->permissions()->sync($permissions['ids'], false);
+
+        // Trigger the PermissionGranted event
+        foreach ($permissions['ids'] as $permissionId) {
+            $permission = Permission::find($permissionId);
+            $group = $permission->group ?? null;
+
+            event(new \Delgont\Armor\Events\PermissionGranted($this, $permission, $group));
         }
+    }
 
         //Remove permissions from cache
         if (array_key_exists('names', $permissions)) {
@@ -189,7 +206,7 @@ trait ModelHasPermissions
      /**
      * Determine if the model may perform the given permission.
      *
-     * @param string|int$permission 
+     * @param string|int$permission
      *
      * @return bool
      * @throws PermissionDoesNotExist
@@ -198,7 +215,7 @@ trait ModelHasPermissions
     {
         $cacheDuration = config('armor.cache_duration', 60);
 
-        return Cache::remember($this->getPermissionCachePrefix().$this->id.'_'.$permission, $cacheDuration, function () use ($permission) {
+        return $this->getCacheStore()->remember($this->getPermissionCachePrefix().$this->id.'_'.$permission, $cacheDuration, function () use ($permission) {
             if (is_string($permission)) {
                 $permissionModel = Permission::whereName($permission)->first();
                 if (!$permissionModel) {

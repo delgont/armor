@@ -17,7 +17,7 @@ class Permission extends Model implements PermissionContract
 {
 
     protected $guarded = [];
-    
+
 
     public function roles() : BelongsToMany
     {
@@ -31,6 +31,17 @@ class Permission extends Model implements PermissionContract
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function group() : BelongsTo
+    {
+        return $this->belongsTo(PermissionGroup::class, 'permission_group_id');
+    }
+
+      /**
+     * A permission belongs to a specific permission group.
+     *
+
+    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function permissionGroup()
     {
         return $this->belongsTo(PermissionGroup::class, 'permission_group_id');
     }

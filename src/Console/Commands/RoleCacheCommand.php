@@ -3,10 +3,7 @@
 namespace Delgont\Armor\Console\Commands;
 
 use Illuminate\Console\Command;
-
 use Illuminate\Support\Facades\Cache;
-
-
 use Delgont\Armor\Models\Role;
 
 class RoleCacheCommand extends Command
@@ -23,12 +20,10 @@ class RoleCacheCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Cache roles and its permissions';
+    protected $description = 'Cache roles and their permissions';
 
     /**
      * Create a new command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -37,24 +32,56 @@ class RoleCacheCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle()
     {
-        $roles = Role::with(['permissions'])->get();
+        if (!$this->confirm('This will overwrite cached roles and permissions. Do you wish to continue?', true)) {
+            $this->info('Command aborted.');
+            return Command::SUCCESS;
+        }
 
+        $roles = $this->fetchRoles();
+
+        $this->cacheRoles($roles);
+
+        $this->displayRoles($roles);
+
+        $this->info('Roles and permissions have been successfully cached.');
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Fetch all roles with their permissions.
+     */
+    private function fetchRoles()
+    {
+        return Role::with('permissions')->get();
+    }
+
+    /**
+     * Cache the roles and their permissions.
+     */
+    private function cacheRoles($roles)
+    {
         Cache::put('role:all', $roles);
 
         foreach ($roles as $role) {
-            $this->info($role->name);
-            Cache::put('role:'.$role.':permissions', $role->permissions);
+            Cache::put('role:' . $role->id . ':permissions', $role->permissions);
         }
-        $this->info('Role and permissions have been cached ...');
     }
 
-    private function getRoles()
+    /**
+     * Display the roles and permissions in a table format.
+     */
+    private function displayRoles($roles)
     {
-        
+        $tableData = $roles->map(function ($role) {
+            return [
+                'Role Name' => $role->name,
+                'Permissions' => $role->permissions->pluck('name')->implode(', '),
+            ];
+        });
+
+        $this->table(['Role Name', 'Permissions'], $tableData->toArray());
     }
 }

@@ -44,7 +44,12 @@ trait RegistersCommands
             DenyAllPermissionsFromRole::class,
             MakeModulePermissionRegistrar::class,
             \Delgont\Armor\Console\Commands\InstallArmorCommand::class,
+            \Delgont\Armor\Console\Commands\SynchronizePermissions::class,
             \Delgont\Armor\Console\Commands\PruneAuditLogsCommand::class,
+            \Delgont\Armor\Console\Commands\GrantPermissionCommand::class,
+            \Delgont\Armor\Console\Commands\GrantPermissionsCommand::class,
+            \Delgont\Armor\Console\Commands\ShowPermissionsCommand::class,
+            \Delgont\Armor\Console\Commands\ShowRolesCommand::class,
         ]);
     }
 }

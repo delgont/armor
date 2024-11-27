@@ -1,20 +1,17 @@
 <?php
-
-//delete in version 2 replaced by SynchronizePermissions
-
 namespace Delgont\Armor\Console\Commands;
 
 use Illuminate\Console\Command;
 use Delgont\Armor\AuthManager;
 
-class SyncPermission extends Command
+class SynchronizePermissions extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'permissions:sync';
+    protected $signature = 'armor:sync-permissions';
 
     /**
      * The console command description.
