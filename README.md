@@ -401,29 +401,33 @@ Route::get('/page', function ($pageName) {
 
 ---
 
-<h2 id="artisan-commands" style="color: #1E90FF;">Artisan Commands</h2>
-
-
-> Roles
-
-```cmd
-php artisan make:roleRegistrar Roles/ExampleRoleRegistrar
-```
-
-```cmd
-php artisan role:sync
-```
-
-```cmd
-php artisan permissions:sync
-```
-
-```cmd
-php artisan permissions:give-all {userId} Modules\Applicant\Entities\Applicant
-```
+<h2 id="artisan-commands">Artisan Commands</h2>
 
 ```php
 php artisan armor:install
 ```
 
+
+> Role Artisan Commands
+
+```cmd
+php artisan make:roleRegistrar Roles/ExampleRoleRegistrar
+```
+```cmd
+php artisan role:sync
+```
+
+> Role Artisan Commands
+
+
+```cmd
+php artisan permissions:sync
+```
+```php
+php artisan armor:permissions:give-all-to {userId} modelKey
+```
+
+```php
+php artisan armor:permissions:deny-all-from userId modelkey
+```
 

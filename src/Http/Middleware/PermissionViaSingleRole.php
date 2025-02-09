@@ -1,9 +1,9 @@
 <?php
 
-namespace Delgont\Auth\Http\Middleware;
+namespace Delgont\Armor\Http\Middleware;
 
 use Closure;
-use Delgont\Auth\Exceptions\UnauthorizedException;
+use Delgont\Armor\Exceptions\UnauthorizedException;
 
 class PermissionViaSingleRole
 {
@@ -19,7 +19,7 @@ class PermissionViaSingleRole
         $authenticated = app('auth')->guard($guard);
         $allow = false;
 
-        if ($authenticated->guest()) { 
+        if ($authenticated->guest()) {
           throw UnauthorizedException::notLoggedIn();
       }
 

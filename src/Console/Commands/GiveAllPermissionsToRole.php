@@ -4,12 +4,12 @@ namespace Delgont\Armor\Console\Commands;
 
 use Illuminate\Console\Command;
 
-use Delgont\Armor\Models\Role; 
-use Delgont\Armor\Models\Permission; 
+use Delgont\Armor\Models\Role;
+use Delgont\Armor\Models\Permission;
 
 class GiveAllPermissionsToRole extends Command
 {
-    protected $signature = 'permissions:give-all-to-role {roleId}';
+    protected $signature = 'armor:permissions:give-all-to-role {roleId}';
     protected $description = 'Give all permissions to the specified role by id';
 
     public function handle()

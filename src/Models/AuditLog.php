@@ -14,7 +14,8 @@ class AuditLog extends Model
         'message',
         'auditlogable_id',
         'auditlogable_type',
-        'changes',
+        'before',
+        'after',
         'metadata',
         'ip_address',
         'user_agent',
@@ -24,7 +25,8 @@ class AuditLog extends Model
     ];
 
     protected $casts = [
-        'changes' => 'array',
+        'before' => 'array',
+        'after' => 'array',
         'metadata' => 'array',
         'performed_at' => 'datetime',
     ];

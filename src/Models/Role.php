@@ -5,6 +5,7 @@ namespace Delgont\Armor\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 use Delgont\Armor\Concerns\ModelHasPermissions;
@@ -17,9 +18,9 @@ use Delgont\Armor\Contracts\Role as RoleContract;
 class Role extends Model
 {
     use ModelHasPermissions;
-    
+
     protected $fillable = ['name', 'description'];
-    
+
     protected $permissionsCachePrefix = 'role_permissions_';
 
 
@@ -27,11 +28,11 @@ class Role extends Model
     {
         return $this->belongsToMany(Permission::class, 'role_has_permissions', 'role_id', 'permission_id');
     }
-  
+
 
     /**
      * Get the group to which the role belongs to
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function group() : BelongsTo
@@ -50,5 +51,5 @@ class Role extends Model
             (is_int($group)) ? $groupQuery->whereId($group) : $groupQuery->whereName($group);
         });
     }
- 
+
 }

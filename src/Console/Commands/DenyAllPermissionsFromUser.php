@@ -2,7 +2,6 @@
 
 namespace Delgont\Armor\Console\Commands;
 
-
 use Illuminate\Console\Command;
 
 use Delgont\Armor\Models\Permission;
@@ -11,7 +10,7 @@ use Delgont\Armor\Models\Permission;
 class DenyAllPermissionsFromUser extends Command
 {
 
-    protected $signature = 'permissions:deny-all {userId} {model?}';
+    protected $signature = 'armor:permissions:deny-all-from-user {userId} {model?}';
     protected $description = 'Deny all permissions from the specified user by ID and model';
 
     public function handle()

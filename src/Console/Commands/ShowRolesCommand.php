@@ -58,7 +58,7 @@ class ShowRolesCommand extends Command
         // Display the table
         $this->line('');
         $this->info("Roles (Page {$page}, showing {$perPage} per page)");
-        $this->table(['ID', 'Role Name', 'Order', 'Group Name'], $permissionsArray);
+        $this->table(['ID', 'Role Name', 'Order', 'Group Name'], $rolesArray);
         $this->line('');
 
         return 0;

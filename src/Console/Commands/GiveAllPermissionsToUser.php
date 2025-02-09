@@ -6,25 +6,31 @@ namespace Delgont\Armor\Console\Commands;
 use Illuminate\Console\Command;
 
 use Delgont\Armor\Models\Permission;
+use Delgont\Armor\Armor;
 
 
 class GiveAllPermissionsToUser extends Command
 {
-    protected $signature = 'permissions:give-all {userId} {model?}';
+    protected $signature = 'armor:permissions:give-all-to {userId} {modelKey : The shorthand key or fully qualified class name of the model (e.g., "user" or App\\User)}';
     protected $description = 'Give all permissions to the specified user by ID and model';
 
     public function handle()
     {
-        $modelClass = $this->argument('model') ?? config('armor.user', App\User::class);
+        $modelKey = $this->argument('modelKey');
 
-        // Check if the model class exists
-        if (!class_exists($modelClass)) {
-            $this->error('Model class not found: ' . $modelClass);
-            return 1; // Return error code
+
+        // Resolve the model class using the Armor utility
+        $modelClass = Armor::resolvePermissionable($modelKey);
+
+        if (!$modelClass) {
+            $this->error("The model key [$modelKey] is not registered as a permissionable class.");
+            return Command::FAILURE;
         }
 
-        // Retrieve the user by ID
+        // Fetch the model
         $userId = $this->argument('userId');
+
+        // Retrieve the user by ID
 
         $user = $modelClass::find($userId);
 

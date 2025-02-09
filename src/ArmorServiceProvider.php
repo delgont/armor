@@ -33,6 +33,9 @@ use Illuminate\Support\Facades\Blade;
 
 use Illuminate\Support\Str;
 
+use Delgont\Armor\Events\AuditActivityLogged;
+use Delgont\Armor\Listeners\LogAuditActivity;
+
 class ArmorServiceProvider extends ServiceProvider
 {
     use RegistersCommands;
@@ -43,10 +46,10 @@ class ArmorServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        
+
 
         $this->registerCommands();
-        
+
     }
 
     /**
@@ -56,12 +59,14 @@ class ArmorServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->registerEvents();
+
         $this->publishes([
             __DIR__.'/../config/armor.php' => config_path('armor.php')
         ], 'armor-config');
 
         $router = $this->app->make(Router::class);
-        
+
         $router->aliasMiddleware('permission', PermissionMiddleware::class);
         $router->aliasMiddleware('role.permission', RolePermissionMiddleware::class);
 
@@ -78,7 +83,7 @@ class ArmorServiceProvider extends ServiceProvider
 
         $this->registerBladeExtensions();
 
-        
+
         Blade::directive('role', function ($arguments) {
             list($role, $guard) = explode(',', $arguments.',');
             return "<?php if(auth({$guard})->check() && auth({$guard})->user()->hasRole({$role})): ?>";
@@ -94,7 +99,7 @@ class ArmorServiceProvider extends ServiceProvider
             return '<?php endif; ?>';
         });
 
-       
+
 
     }
 
@@ -118,20 +123,20 @@ class ArmorServiceProvider extends ServiceProvider
 
 
         Blade::directive('usertype', function ($usertypes, $guard = 'null') {
-            return "<?php 
-                if (auth($guard)->check() && auth($guard)->user()->user_type !== null && 
+            return "<?php
+                if (auth($guard)->check() && auth($guard)->user()->user_type !== null &&
                     in_array(
                         strtolower(last(explode('\\\\', auth($guard)->user()->user_type))),
                         explode('|', {$usertypes})
                     )
-                ): 
+                ):
             ?>";
         });
-        
+
         Blade::directive('elseusertype', function () {
             return '<?php else: ?>';
         });
-    
+
         Blade::directive('endusertype', function () {
             return '<?php endif; ?>';
         });
@@ -172,5 +177,13 @@ class ArmorServiceProvider extends ServiceProvider
 
     }
 
-  
+    /**
+     * Register package-specific events.
+     */
+    protected function registerEvents(): void
+    {
+        Event::listen(AuditActivityLogged::class, LogAuditActivity::class);
+    }
+
+
 }

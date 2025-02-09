@@ -77,9 +77,7 @@ abstract class PermissionRegistrar
             Permission::updateOrCreate(
                 [
                     'name' => $permission,
-                    'description' => $this->getDescriptions()[$permission] ?? null,
                     'permission_group_id' => $permissionGroup->id,
-                    'order' => (int)$index + 1,
                 ],
                 [
                     'description' => $this->getDescriptions()[$permission] ?? null,

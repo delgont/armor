@@ -15,6 +15,7 @@ use Delgont\Armor\Console\Commands\SyncRole;
 use Delgont\Armor\Console\Commands\MakePermissionRegistrar;
 use Delgont\Armor\Console\Commands\MakeRoleRegistrar;
 use Delgont\Armor\Console\Commands\RoleCacheCommand;
+
 use Delgont\Armor\Console\Commands\GiveAllPermissionsToUser;
 use Delgont\Armor\Console\Commands\DenyAllPermissionsFromUser;
 
@@ -50,6 +51,7 @@ trait RegistersCommands
             \Delgont\Armor\Console\Commands\GrantPermissionsCommand::class,
             \Delgont\Armor\Console\Commands\ShowPermissionsCommand::class,
             \Delgont\Armor\Console\Commands\ShowRolesCommand::class,
+            \Delgont\Armor\Console\Commands\ShowPermissionables::class,
         ]);
     }
 }
