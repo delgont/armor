@@ -10,14 +10,9 @@ class AuditActivityLogged
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(
-        public readonly ?object $user,
-        public readonly string $action,
-        public readonly ?string $message,
-        public readonly array $request = [],
-        public readonly mixed $before = null,
-        public readonly mixed $after = null
-    ) {
+    protected $user, $action, $message, $request, $before, $after;
+
+    public function __construct($user, string $action, ?string $message, array $request = [], $before = null, $after = null) {
         $this->request = [
             'method'     => $request['method'] ?? null,
             'url'        => $request['url'] ?? null,
