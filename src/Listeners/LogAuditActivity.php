@@ -1,5 +1,4 @@
 <?php
-
 namespace Delgont\Armor\Listeners;
 
 use Delgont\Armor\Events\AuditActivityLogged;
@@ -21,12 +20,12 @@ class LogAuditActivity implements ShouldQueue
             'user_type'  => $event->user ? get_class($event->user) : null,
             'action'     => $event->action,
             'message'    => $event->message,
-            'method'     => $event->request->method(),
-            'url'        => $event->request->fullUrl(),
+            'method'     => $event->request['method'],  // Accessing method directly from the array
+            'url'        => $event->request['url'],     // Accessing URL directly from the array
             'before'     => $this->encodeJson($event->before),
             'after'      => $this->encodeJson($event->after),
-            'ip_address' => $event->request->ip(),
-            'user_agent' => $event->request->header('User-Agent'),
+            'ip_address' => $event->request['ip'],      // Accessing IP address directly from the array
+            'user_agent' => $event->request['user_agent'], // Accessing user agent directly from the array
         ]);
     }
 
