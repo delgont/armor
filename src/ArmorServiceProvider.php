@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Blade;
 
 use Illuminate\Support\Str;
 
+use Illuminate\Support\Facades\Event;
 use Delgont\Armor\Events\AuditActivityLogged;
 use Delgont\Armor\Listeners\LogAuditActivity;
 
