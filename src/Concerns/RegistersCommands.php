@@ -52,6 +52,7 @@ trait RegistersCommands
             \Delgont\Armor\Console\Commands\ShowPermissionsCommand::class,
             \Delgont\Armor\Console\Commands\ShowRolesCommand::class,
             \Delgont\Armor\Console\Commands\ShowPermissionables::class,
+            \Delgont\Armor\Console\Commands\ArmorCachePermissionsCommand::class,
         ]);
     }
 }

@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Support\Str;
 
 class UserTypeMiddleware
-{ 
+{
     /**
      * Handle an incoming request.
      *
@@ -17,7 +17,7 @@ class UserTypeMiddleware
     public function handle($request, Closure $next, $userType, $guard = null)
     {
         if ($user = auth($guard)->user()) {
-            
+
             $userableTypeNamespace = explode('\\', $user->user_type);
 
             $types = is_array($userType) ? $userType : explode(config('armor.delimiter', '|'), $userType);
@@ -29,6 +29,8 @@ class UserTypeMiddleware
                 //check if the user type actually exits
             }
         }
-        abort(403);
+
+        abort(403, 'You do not have the right permission to access this resource.');
+
     }
 }

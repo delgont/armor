@@ -7,13 +7,11 @@ use Delgont\Armor\Models\PermissionGroup;
 
 use Delgont\Armor\Events\PermissionGroupSynchronized;
 
-
 abstract class PermissionRegistrar
 {
     protected $group = null; // Permission group name
     protected $permissions = null; // Permission constants or array
     protected $descriptions = null; // Descriptions of permissions
-
 
    /**
      * Get the name of the permission group.
@@ -29,6 +27,25 @@ abstract class PermissionRegistrar
     {
         return ($this->permissions) ? $permissions : (new \ReflectionClass($this))->getConstants();
     }
+
+    /**
+     * Get all permissions associated with the current group from the database.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPermissionsFromDb()
+    {
+        $groupName = $this->getGroup() ?? static::class;
+
+        $group = PermissionGroup::where('name', $groupName)->first();
+
+        if (!$group) {
+            return collect(); // Return empty collection if group doesn't exist
+        }
+
+        return Permission::where('permission_group_id', $group->id)->get();
+    }
+
 
      /**
      * Get the descriptions for the permissions.

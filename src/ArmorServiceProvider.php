@@ -100,6 +100,10 @@ class ArmorServiceProvider extends ServiceProvider
             return '<?php endif; ?>';
         });
 
+        Armor::registerPermissionables([
+            'role' => \Delgont\Armor\Models\Role::class
+        ]);
+
 
 
     }

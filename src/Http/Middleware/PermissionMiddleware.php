@@ -25,7 +25,7 @@ class PermissionMiddleware
 
         // Normalize permissions into an array
         $permissions = is_array($permission) ? $permission : explode(config('armor.permission_delimiter', '|'), $permission);
-        
+
         // Check if user has any of the required permissions
         $user = $authenticated->user();
         $hasPermission = $user->hasAnyPermission(...$permissions);
@@ -36,26 +36,6 @@ class PermissionMiddleware
 
         return $next($request);
 
-        /** 
-        $permissions = is_array($permission)
-        ? $permission
-        : explode(config('permissions.delimiter', '|'), $permission);
 
-        foreach ($permissions as $permission) {
-            if($authenticated->user()->hasPermissionTo($permission)){
-                $allow = true;
-            }else{
-                $allow = false;
-                throw UnauthorizedException::forPermissions($permissions);
-            }
-        }
-
-        if ($allow) {
-            return $next($request);
-        }
-
-        throw UnauthorizedException::forPermissions($permissions);
-        */
-        
     }
 }

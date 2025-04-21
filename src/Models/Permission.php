@@ -12,11 +12,29 @@ use Delgont\Armor\Models\PermissionGroup;
 
 use Delgont\Armor\Contracts\Permission as PermissionContract;
 
+use Illuminate\Support\Facades\Cache;
+
+
 
 class Permission extends Model implements PermissionContract
 {
 
     protected $guarded = [];
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function () {
+            Cache::store(config('armor.cache_store'))->forget('permissions');
+        });
+
+        static::deleted(function () {
+            Cache::store(config('armor.cache_store'))->forget('permissions');
+        });
+    }
+
 
 
     public function roles() : BelongsToMany
@@ -57,5 +75,14 @@ class Permission extends Model implements PermissionContract
             $groupQuery->whereName($group);
         });
     }
+
+    protected function getAllPermissions(): \Illuminate\Support\Collection
+    {
+        $cacheDuration = config('armor.cache_duration', 60);
+        return $this->getCacheStore()->remember('permissions', $cacheDuration, function () {
+            return Permission::all();
+        });
+    }
+
 
 }

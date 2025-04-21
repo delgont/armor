@@ -8,7 +8,7 @@ return [
 
 
     /**
-     * Permission COnfiguratiin
+     * Permission configuration
      */
     'permission_delimiter' => '|',
 

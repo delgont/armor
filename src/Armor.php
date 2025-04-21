@@ -46,4 +46,22 @@ class Armor
     {
         return array_merge(config('armor.permissionables', []), static::$permissionables);
     }
+
+
+    /**
+     * Register permission registrar classes dynamically.
+     *
+     * @param array|string $registrars
+     */
+    public static function registerPermissionRegistrars(array|string $registrars): void
+    {
+        $registrars = is_array($registrars) ? $registrars : [$registrars];
+
+        $existing = config('armor.permission_registrars', []);
+
+        config([
+            'armor.permission_registrars' => array_merge($existing, $registrars),
+        ]);
+    }
+
 }

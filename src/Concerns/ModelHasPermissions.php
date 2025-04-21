@@ -211,23 +211,38 @@ trait ModelHasPermissions
      * @return bool
      * @throws PermissionDoesNotExist
      */
-    public function hasPermissionTo($permission) : bool
+    public function hasPermissionTo($permission): bool
     {
         $cacheDuration = config('armor.cache_duration', 60);
 
-        return $this->getCacheStore()->remember($this->getPermissionCachePrefix().$this->id.'_'.$permission, $cacheDuration, function () use ($permission) {
-            if (is_string($permission)) {
-                $permissionModel = Permission::whereName($permission)->first();
+        return $this->getCacheStore()->remember(
+            $this->getPermissionCachePrefix() . $this->id . '_' . $permission,
+            $cacheDuration,
+            function () use ($permission) {
+                if (!is_string($permission)) {
+                    throw new \InvalidArgumentException('Invalid permission type.');
+                }
+
+                // Try to get all permissions from cache
+                $permissions = cache('permissions', collect());
+
+                // Use cached permissions if available
+                $permissionModel = $permissions->firstWhere('name', $permission);
+
+                // Fallback to DB if not in cache
+                if (!$permissionModel) {
+                    $permissionModel = Permission::whereName($permission)->first();
+                }
+
+                // If still not found, throw
                 if (!$permissionModel) {
                     throw PermissionDoesNotExist::create($permission);
                 }
-            }else{
-                throw new \InvalidArgumentException('Invalid permission type.');
-            }
 
-            return $this->permissions->contains('name', $permissionModel->name);
-        });
-       //return $this->hasPermission($permission);
+                // Check if user has the permission
+                return $this->permissions->contains('name', $permissionModel->name);
+            }
+        );
     }
 
     /**

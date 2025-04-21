@@ -6,7 +6,6 @@ namespace Delgont\Armor;
 use Delgont\Armor\Events\PermissionsSynchronized;
 
 
-
 class AuthManager
 {
     public function syncPermissions() : string
@@ -23,13 +22,12 @@ class AuthManager
                     \Log::warning("Permission registrar class {$permission} does not exist.");
                 }
             }
-            //PermissionsSynchronized Event Here
             return 'Permissions successfully synchronized';
         } else {
             return 'There are no permissions to sync';
         }
     }
-    
+
     public function syncRoles() : string
     {
         $roles =  config('armor.role_registrars');
@@ -42,5 +40,5 @@ class AuthManager
             return 'no roles to sync';
         }
     }
-    
+
 }
