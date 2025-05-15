@@ -1,4 +1,4 @@
-![Delgont Armor Banner](https://raw.githubusercontent.com/your-username/your-repo/banner.jpg)
+![Delgont Armor Banner](https://raw.githubusercontent.com/delgont/armor/main/banner.jpg)
 
 ## Armor – Laravel Role & Permission System
 

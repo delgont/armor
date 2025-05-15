@@ -53,6 +53,10 @@ trait RegistersCommands
             \Delgont\Armor\Console\Commands\ShowRolesCommand::class,
             \Delgont\Armor\Console\Commands\ShowPermissionables::class,
             \Delgont\Armor\Console\Commands\ArmorCachePermissionsCommand::class,
+            \Delgont\Armor\Console\Commands\AddRole::class,
+            \Delgont\Armor\Console\Commands\ShowPermissionRegistrars::class,
+            \Delgont\Armor\Console\Commands\ShowRolePermissions::class,
+            \Delgont\Armor\Console\Commands\ShowPermissionGroups::class,
         ]);
     }
 }

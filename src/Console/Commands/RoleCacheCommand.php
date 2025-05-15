@@ -13,7 +13,7 @@ class RoleCacheCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'role:cache';
+    protected $signature = 'armor:role:cache';
 
     /**
      * The console command description.
