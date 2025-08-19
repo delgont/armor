@@ -10,9 +10,25 @@ class AuditActivityLogged
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user, $action, $message, $request, $before, $after;
+    public $user;
+    public $action;
+    public $message;
+    public $request;
+    public $before;
+    public $after;
+    public $links;
 
-   public function __construct($user, string $action, ?string $message, array $request = [], $before = null, $after = null) {
+    /**
+     * Original constructor (backward compatible)
+     */
+    public function __construct(
+        $user,
+        string $action,
+        ?string $message,
+        array $request = [],
+        $before = null,
+        $after = null
+    ) {
         $this->user = $user;
         $this->action = $action;
         $this->message = $message;
@@ -24,6 +40,23 @@ class AuditActivityLogged
         ];
         $this->before = $before;
         $this->after = $after;
+        $this->links = []; // default empty for backward compatibility
     }
 
+    /**
+     * Factory method to include links
+     */
+    public static function withLinks(
+        $user,
+        string $action,
+        ?string $message = null,
+        array $request = [],
+        $before = null,
+        $after = null,
+        array $links = []
+    ): self {
+        $event = new self($user, $action, $message, $request, $before, $after);
+        $event->links = $links;
+        return $event;
+    }
 }

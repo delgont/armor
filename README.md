@@ -76,6 +76,100 @@ class ClientPermissionRegistrar extends PermissionRegistrar
 }
 ```
 
+## Armor Audit Logging
+
+`Armor` provides a flexible and structured audit logging system for Laravel. It allows you to log user activities, store before/after snapshots of data, add contextual links, and optionally capture request information. The system is backward compatible and works with existing code without breaking changes.
+
+---
+
+### Features
+- Log user actions with custom messages.
+- Store `before` and `after` snapshots of data.
+- Include structured links (e.g., "View", "Undo") in logs.
+- Automatically capture request information (method, URL, IP, user-agent).
+- Fully backward compatible: old code works without links or snapshots.
+- Easy to use via helper function or service.
+
+---
+
+#### Using the Helper Functions
+
+Basic usage:
+
+```php
+audit_log(
+    user: auth()->user(),
+    action: 'Student Registered',
+    message: 'Registered a new student'
+);
+
+audit_log(
+    user: auth()->user(),
+    action: 'Updated Student',
+    message: 'Updated student details',
+    before: $oldData,
+    after: $newData
+);
+
+audit_log(
+    user: auth()->user(),
+    action: 'Registered Student',
+    message: 'New student added',
+    after: $student->toArray(),
+    links: [
+        ['text' => 'View Student', 'url' => route('students.show', $student->id)],
+        ['text' => 'Undo', 'url' => route('students.undo', $student->id)]
+    ]
+);
+
+audit_log(
+    user: auth()->user(),
+    action: 'Student Registered',
+    message: 'Registered new student',
+    requestData: [
+        'method' => $request->method(),
+        'url' => $request->fullUrl(),
+        'ip' => $request->ip(),
+        'user_agent' => $request->header('User-Agent')
+    ]
+);
+```
+
+#### Using the Service Class
+
+
+```php
+use Delgont\Armor\Services\AuditLogger;
+
+AuditLogger::log(
+    user: $user,
+    action: 'Action Title',
+    message: 'Optional message',
+    requestData: ['method'=>'POST','url'=>route('route.name')],
+    before: $oldData,
+    after: $newData,
+    links: [
+        ['text'=>'View', 'url'=>route('route.view')],
+        ['text'=>'Undo', 'url'=>route('route.undo')]
+    ]
+);
+```
+
+#### Displaying Logs in Blade
+
+```php
+<p>{{ $log->message }}</p>
+
+@if(!empty($log->links))
+    <ul>
+        @foreach($log->links as $link)
+            <li><a href="{{ $link['url'] }}">{{ $link['text'] }}</a></li>
+        @endforeach
+    </ul>
+@endif
+```
+
+
 👉 **Read full documentation**: [https://delgont.github.io/armor-docs](https://delgont.github.io/armor-docs)
 
 📖 **Developed by**: [Stephen Okello](https://github.com/stephenokelloug)

@@ -36,7 +36,10 @@
     "autoload": {
         "psr-4": {
             "Delgont\\Armor\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
