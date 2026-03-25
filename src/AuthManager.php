@@ -10,23 +10,31 @@ class AuthManager
 {
     public function syncPermissions() : string
     {
-        $permissions = config('armor.permission_registrars');
+        $registrars = config('armor.permission_registrars');
+        $allPermissions = [];
 
-        if (is_array($permissions) && count($permissions) > 0) {
-            foreach ($permissions as $permission) {
-                // Check if the class exists
-                if (class_exists($permission)) {
-                    app($permission)->sync();
+        if (is_array($registrars) && count($registrars) > 0) {
+            foreach ($registrars as $registrar) {
+                if (class_exists($registrar)) {
+                    $instance = app($registrar);
+                    $instance->sync();
+
+                    // Collect permissions from this registrar
+                    $allPermissions = array_merge($allPermissions, $instance->getPermissions());
                 } else {
-                    // Log or handle the missing class if needed
-                    \Log::warning("Permission registrar class {$permission} does not exist.");
+                    \Log::warning("Permission registrar class {$registrar} does not exist.");
                 }
             }
+
+            // Dispatch event with actual permissions
+            event(new PermissionsSynchronized($allPermissions));
+
             return 'Permissions successfully synchronized';
         } else {
             return 'There are no permissions to sync';
         }
     }
+
 
     public function syncRoles() : string
     {

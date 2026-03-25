@@ -1,6 +1,19 @@
 <?php
 
 use Delgont\Armor\Services\AuditLogger;
+use Delgont\Armor\AuthManager;
+
+if (! function_exists('armor')) {
+    /**
+     * Get the Armor AuthManager instance.
+     *
+     * @return \Delgont\Armor\AuthManager
+     */
+    function armor(): AuthManager
+    {
+        return app(AuthManager::class);
+    }
+}
 
 if (!function_exists('audit_log')) {
     /**

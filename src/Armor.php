@@ -64,4 +64,34 @@ class Armor
         ]);
     }
 
+    /**
+     * Get all permissions from all registered registrars.
+     *
+     * @return array
+     */
+    public static function getPermissions(): array
+    {
+        $registrars = config('armor.permission_registrars', []);
+        $permissions = [];
+
+        foreach ($registrars as $registrar) {
+            if (class_exists($registrar)) {
+                $instance = app($registrar);
+                $permissions = array_merge($permissions, $instance->getPermissions());
+            }
+        }
+
+        return $permissions;
+    }
+
+     /**
+     * Get all registered permission registrar classes.
+     *
+     * @return array
+     */
+    public static function getPermissionRegistrars(): array
+    {
+        return config('armor.permission_registrars', []);
+    }
+
 }

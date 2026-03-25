@@ -137,16 +137,16 @@ trait ModelHasPermissions
         $model = $this->getModel();
 
         if ($model->exists && array_key_exists('ids', $permissions)) {
-        $this->permissions()->sync($permissions['ids'], false);
+            $this->permissions()->sync($permissions['ids'], false);
 
-        // Trigger the PermissionGranted event
-        foreach ($permissions['ids'] as $permissionId) {
-            $permission = Permission::find($permissionId);
-            $group = $permission->group ?? null;
+            // Trigger the PermissionGranted event
+            foreach ($permissions['ids'] as $permissionId) {
+                $permission = Permission::find($permissionId);
+                $group = $permission->group ?? null;
 
-            event(new \Delgont\Armor\Events\PermissionGranted($this, $permission, $group));
+                event(new \Delgont\Armor\Events\PermissionGranted($this, $permission, $group));
+            }
         }
-    }
 
         //Remove permissions from cache
         if (array_key_exists('names', $permissions)) {
@@ -272,11 +272,19 @@ trait ModelHasPermissions
      */
     public function syncPermissions(...$permissions)
     {
+         // Normalize: if the first argument is an array, flatten it
+        if (count($permissions) === 1 && is_array($permissions[0])) {
+            $permissions = $permissions[0];
+        }
+
+        // Detach existing permissions
         $this->permissions()->detach();
 
-        $this->invalidatePermissionsCache();
+        // Invalidate cache for each permission
+        $this->invalidatePermissionCache($permissions);
 
-        return $this->givePermissionTo($permissions);
+        // Re-attach permissions
+        return $this->givePermissionTo(...$permissions);
     }
 
      /**
