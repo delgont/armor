@@ -1,4 +1,14 @@
 <?php
+/**
+ * Delgont Armor (https://delgont.co.ug).
+ *
+ * @link https://github.com/delgont/armor source repository
+ *
+ * @copyright Copyright (c) 2026. Delgont Technologies Co. Ltd (https://delgont.co.ug)
+ *
+ * @license https://www.elastic.co/licensing/elastic-license
+ */
+
 
 namespace Delgont\Armor\Models;
 

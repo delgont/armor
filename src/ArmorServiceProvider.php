@@ -104,8 +104,6 @@ class ArmorServiceProvider extends ServiceProvider
             'role' => \Delgont\Armor\Models\Role::class
         ]);
 
-
-
     }
 
 

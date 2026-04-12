@@ -1,4 +1,12 @@
 <?php
+/**
+ * Delgont Armor
+ *
+ * @link      https://github.com/delgont/armor
+ * @copyright Copyright (c) 2026 Delgont Technologies Co. Ltd
+ * @license   MIT License (https://opensource.org/licenses/MIT)
+ *
+ */
 
 namespace Delgont\Armor;
 
@@ -69,7 +77,7 @@ class Armor
      *
      * @return array
      */
-    public static function getPermissions(): array
+    public static function getPermissions() : array
     {
         $registrars = config('armor.permission_registrars', []);
         $permissions = [];

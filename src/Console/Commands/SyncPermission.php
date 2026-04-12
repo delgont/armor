@@ -1,6 +1,13 @@
 <?php
-
-//delete in version 2 replaced by SynchronizePermissions
+/**
+ * Delgont Armor  (https://delgont.co.ug).
+ *
+ * @link https://github.com/delgont/armor source repository
+ *
+ * @copyright Copyright (c) 2024. Delgont Technologies Co. Ltd (https://delgont.co.ug)
+ *
+ * @license https://opensource.org/licenses/MIT MIT License
+ */
 
 namespace Delgont\Armor\Console\Commands;
 

@@ -1,6 +1,6 @@
 {
     "name": "delgont/armor",
-    "description" : "Larevel User - Permissions -Roles",
+    "description": "Armor is a high‑performance Laravel package for managing user roles and permissions. It provides a flexible, cache‑friendly system to define, assign, and enforce permissions across your application, making route and action protection seamless and efficient.",
     "keywords": [
         "laravel admin",
         "laravel user permissions",
