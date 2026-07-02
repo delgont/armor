@@ -60,7 +60,7 @@ trait ModelHasPermissions
     /**
      * Invalidate the permission cache for the role or user.
      */
-    protected function invalidatePermissionCache($permissions)
+    public function invalidatePermissionCache($permissions)
     {
         foreach ($permissions as $permission) {
             $this->getCacheStore()->forget($this->getPermissionCachePrefix(). $this->id.'_'.$permission);
