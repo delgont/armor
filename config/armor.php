@@ -19,6 +19,13 @@ return [
       App\Permissions\ExamplePermissionRegistrar::class,
     ],
 
+    'action_registrars' => [
+      /*
+      * your system action registrars - have action constants
+      */
+      App\Actions\ExampleSystemActionRegistrar::class,
+    ],
+
     /**
      * Role Configuration
      */

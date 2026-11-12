@@ -13,6 +13,7 @@ use Delgont\Armor\Models\PermissionGroup;
 use Delgont\Armor\Contracts\Permission as PermissionContract;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 
 
@@ -25,6 +26,13 @@ class Permission extends Model implements PermissionContract
     protected static function boot()
     {
         parent::boot();
+
+        static::creating(function ($group) {
+
+            if (! $group->uuid) {
+                $group->uuid = (string) Str::uuid();
+            }
+        });
 
         static::saved(function () {
             Cache::store(config('armor.cache_store'))->forget('permissions');

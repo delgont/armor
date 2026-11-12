@@ -16,12 +16,25 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 trait HasAuditLogs
 {
     /**
-     * Get all audit logs for the user.
+     * Audit logs performed by this model.
      */
     public function auditLogs(): MorphMany
     {
-        return $this->morphMany(AuditLog::class, 'user');
+        return $this->morphMany(
+            AuditLog::class,
+            'user',
+            'user_type',
+            'user_id'
+        );
     }
 
-   
+    /**
+     * Latest audit log.
+     */
+    public function latestAuditLog()
+    {
+        return $this->auditLogs()
+            ->latest('performed_at')
+            ->first();
+    }
 }

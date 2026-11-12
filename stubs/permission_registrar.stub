@@ -2,17 +2,47 @@
 
 namespace {{registrarNamespace}};
 
-use Delgont\Armor\PermissionRegistrar;
+use Delgont\Armor\SystemActionRegistrar;
 
-class {{registrar}} extends PermissionRegistrar
+class {{registrar}} extends SystemActionRegistrar
 {
-    //define your permissions as constants
-    const CAN_VIEW_USERS = 'can-view-users';
+    /**
+     * Action group name.
+     *
+     * Examples:
+     * expenses
+     * invoices
+     * contacts
+     */
+    protected $group = '{{group}}';
 
-    //permision descriptions
-    public function descriptions()
+    // Action definitions
+    const CREATE_RECORD = 'create_record';
+
+    const UPDATE_RECORD = 'update_record';
+
+    const DELETE_RECORD = 'delete_record';
+
+    /**
+     * Action descriptions.
+     */
+    protected function descriptions(): array
     {
-        //return [self::CAN_VIEW_USERS => 'User will be able to view user accounts];
+        return [
+            self::CREATE_RECORD => 'Create a record',
+            self::UPDATE_RECORD => 'Update a record',
+            self::DELETE_RECORD => 'Delete a record',
+        ];
     }
-    
+
+    /**
+     * Actions supporting undo.
+     */
+    protected function undoable(): array
+    {
+        return [
+            self::UPDATE_RECORD,
+            self::DELETE_RECORD,
+        ];
+    }
 }

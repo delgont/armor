@@ -22,14 +22,26 @@ use Delgont\Armor\Concerns\ModelHasPermissions;
 
 use Delgont\Armor\Models\Permission;
 use Delgont\Armor\Models\RoleGroup;
-
 use Delgont\Armor\Contracts\Role as RoleContract;
+
+use Illuminate\Support\Str;
+
 
 class Role extends Model
 {
     use ModelHasPermissions;
 
     protected $fillable = ['name', 'description'];
+
+    protected static function booted()
+    {
+        static::creating(function ($role) {
+
+            if (! $role->uuid) {
+                $role->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     protected $permissionsCachePrefix = 'role_permissions_';
 

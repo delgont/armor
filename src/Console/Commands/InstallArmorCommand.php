@@ -11,7 +11,7 @@ class InstallArmorCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'armor:install';
+    protected $signature = 'armor:v1.x:install';
 
     /**
      * The console command description.

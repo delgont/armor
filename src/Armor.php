@@ -102,4 +102,47 @@ class Armor
         return config('armor.permission_registrars', []);
     }
 
+     /**
+     * Registered action registrars.
+     */
+    protected static array $actionRegistrars = [];
+
+    /**
+     * Register system action registrars.
+     *
+     * @param array|string $registrars
+     * @return void
+     */
+    public static function registerActionRegistrars(array|string $registrars): void
+    {
+        $registrars = is_array($registrars)
+            ? $registrars
+            : [$registrars];
+
+        $existing = config(
+            'armor.action_registrars',
+            []
+        );
+
+        config([
+            'armor.action_registrars' => array_merge(
+                $existing,
+                $registrars
+            ),
+        ]);
+    }
+
+    /**
+     * Get registered action registrars.
+     *
+     * @return array
+     */
+    public static function getActionRegistrars(): array
+    {
+        return config(
+            'armor.action_registrars',
+            []
+        );
+    }
+
 }

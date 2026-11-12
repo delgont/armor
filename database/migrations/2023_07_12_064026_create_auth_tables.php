@@ -15,19 +15,22 @@ class CreateAuthTables extends Migration
     {
         if (!Schema::hasTable('permission_groups')) {
             Schema::create('permission_groups', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id('id');
+                $table->uuid('uuid')->nullable()->unique();
                 $table->string('name')->unique();
                 $table->text('description')->nullable();
-                $table->string('registrar')->nullable(); // class containing permissions for specific group
+                $table->string('registrar')->nullable();
                 $table->timestamps();
             });
         }
 
         if (!Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id('id');
+                $table->uuid('uuid')->nullable()->unique();
                 $table->string('name')->unique();
                 $table->text('description')->nullable();
+                $table->integer('order')->nullable();
                 $table->unsignedBigInteger('permission_group_id')->nullable();
                 $table->timestamps();
 
@@ -37,18 +40,23 @@ class CreateAuthTables extends Migration
 
         if (!Schema::hasTable('role_groups')) {
             Schema::create('role_groups', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id('id');
+                $table->uuid('uuid')->nullable()->unique();
                 $table->string('name')->unique();
                 $table->text('description')->nullable();
+                $table->string('registrar')->nullable();
+
                 $table->timestamps();
             });
         }
 
         if (!Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
-                $table->bigIncrements('id');
+                $table->id('id');
+                $table->uuid('uuid')->nullable()->unique();
                 $table->string('name')->unique();
                 $table->text('description')->nullable();
+                $table->integer('order')->nullable();
                 $table->unsignedBigInteger('role_group_id')->nullable();
                 $table->timestamps();
                 $table->foreign('role_group_id')->references('id')->on('role_groups')->onDelete('set null');

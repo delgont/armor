@@ -11,12 +11,24 @@
 namespace Delgont\Armor\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 use Delgont\Armor\Models\Role;
 
 class RoleGroup extends Model
 {
     protected $fillable = ['name'];
+
+     protected static function booted()
+    {
+        static::creating(function ($group) {
+
+            if (! $group->uuid) {
+                $group->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
 
     /**
      * A permission may belong to specific group.

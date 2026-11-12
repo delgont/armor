@@ -12,6 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+
+            if (!Schema::hasColumn('users', 'last_ip')) {
+                $table->string('last_ip')->nullable();
+            }
+            
             // Check if the column 'password_changed_at' doesn't exist before adding it
             if (!Schema::hasColumn('users', 'password_changed_at')) {
                 $table->timestamp('password_changed_at')->nullable();

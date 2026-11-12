@@ -1,0 +1,48 @@
+<?php
+
+namespace {{registrarNamespace}};
+
+use Delgont\Armor\SystemActionRegistrar;
+
+class {{registrar}} extends SystemActionRegistrar
+{
+    /**
+     * Action group name.
+     *
+     * Examples:
+     * expenses
+     * invoices
+     * contacts
+     */
+    protected $group = '{{group}}';
+
+    // Action definitions
+    const CREATE_RECORD = 'create_record';
+
+    const UPDATE_RECORD = 'update_record';
+
+    const DELETE_RECORD = 'delete_record';
+
+    /**
+     * Action descriptions.
+     */
+    protected function descriptions(): array
+    {
+        return [
+            self::CREATE_RECORD => 'Create a record',
+            self::UPDATE_RECORD => 'Update a record',
+            self::DELETE_RECORD => 'Delete a record',
+        ];
+    }
+
+    /**
+     * Actions supporting undo.
+     */
+    protected function undoable(): array
+    {
+        return [
+            self::UPDATE_RECORD,
+            self::DELETE_RECORD,
+        ];
+    }
+}

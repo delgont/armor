@@ -13,19 +13,34 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
+            
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('user_type')->nullable();
+
             $table->string('action');
             $table->text('message')->nullable();
-            $table->unsignedBigInteger('auditlogable_id')->nullable();
-            $table->string('auditlogable_type')->nullable();
-            $table->longText('changes')->nullable();
-            $table->text('metadata')->nullable();
+            $table->text('message_html')->nullable();
+            
+            $table->json('before_change')->nullable();
+            $table->json('after_change')->nullable();
+
             $table->ipAddress('ip_address')->nullable();
             $table->string('user_agent')->nullable();
             $table->string('url')->nullable();
             $table->string('method', 10)->nullable();
+
+            $table->string('subject_type')->nullable();
+            $table->unsignedBigInteger('subject_id')->nullable();
+
+            $table->unsignedBigInteger('action_id')->nullable();
+
             $table->timestamp('performed_at')->useCurrent();
+
+            $table->foreign('action_id')
+            ->references('id')
+            ->on('system_actions')
+            ->cascadeOnDelete();
+
             $table->timestamps();
         });
     }
