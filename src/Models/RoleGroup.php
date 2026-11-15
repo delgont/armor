@@ -1,11 +1,12 @@
 <?php
 /**
- * Delgont Armor
+ * Delgont Armor  (https://delgont.co.ug).
  *
- * @link      https://github.com/delgont/armor
- * @copyright Copyright (c) 2024 - Present Delgont Technologies Co. Ltd
- * @license   MIT License (https://opensource.org/licenses/MIT)
+ * @link https://github.com/delgont/armor source repository
  *
+ * @copyright Copyright (c) 2024. Delgont Technologies Co. Ltd (https://delgont.co.ug)
+ *
+ * @license https://opensource.org/licenses/MIT MIT License
  */
 
 namespace Delgont\Armor\Models;

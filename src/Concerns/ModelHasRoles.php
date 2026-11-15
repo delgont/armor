@@ -5,7 +5,6 @@ namespace Delgont\Armor\Concerns;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use Delgont\Armor\Models\Role;
-
 use Delgont\Armor\Exceptions\RoleDoesNotExist;
 
 

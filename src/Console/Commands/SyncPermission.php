@@ -11,61 +11,105 @@
 
 namespace Delgont\Armor\Console\Commands;
 
-use Illuminate\Console\Command;
 use Delgont\Armor\AuthManager;
+use Illuminate\Console\Command;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Terminal;
+use Throwable;
 
 class SyncPermission extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'permissions:sync';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Sync permissions with the system';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+   protected $signature = 'armor:permissions:sync
+                        {--f|force : Skip the confirmation prompt}';
+
+    public function handle(AuthManager $auth): int
     {
-        parent::__construct();
+        if (! $this->option('force')) {
+            $this->info('You are about to sync the permissions to your system.');
+
+            if (! $this->confirm('Do you wish to proceed with syncing the permissions?', true)) {
+                $this->info('Permission sync operation has been canceled.');
+                return Command::SUCCESS;
+            }
+        }
+
+
+        $this->newLine();
+
+        $live = $this->output->isDecorated(); // in-place updates only on a real terminal
+        $processed = 0;
+        $failures = 0;
+
+        $message = $auth->syncPermissions(function (string $event, string $registrar, ...$args) use (
+            $live, &$processed, &$failures
+        ) {
+            switch ($event) {
+                case 'start':
+                    $processed++;
+                    if ($live) {
+                        $this->renderLine($registrar, '0%', 'fg=yellow', false);
+                    }
+                    break;
+
+                case 'progress':
+                    [$done, $total] = $args;
+                    if ($live) {
+                        $percent = $total > 0 ? (int) floor($done / $total * 100) : 100;
+                        $this->renderLine($registrar, "{$percent}%", 'fg=yellow', false);
+                    }
+                    break;
+
+                case 'done':
+                    $this->renderLine($registrar, 'DONE', 'fg=green;options=bold', true);
+                    break;
+
+                case 'failed':
+                    $failures++;
+                    $this->renderLine($registrar, 'FAIL', 'fg=red;options=bold', true);
+                    /** @var Throwable $e */
+                    $e = $args[0];
+                    $this->line('     <fg=red>'.OutputFormatter::escape($e->getMessage()).'</>');
+                    break;
+
+                case 'skipped':
+                    $this->renderLine($registrar, 'SKIPPED', 'fg=yellow', true);
+                    $this->line('     <fg=gray>Class does not exist.</>');
+                    break;
+            }
+        });
+
+        $this->newLine();
+
+        if ($processed === 0) {
+            $this->warn($message);
+            return Command::SUCCESS;
+        }
+
+        $failures > 0 ? $this->error($message) : $this->info($message);
+
+        return $failures > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
     /**
-     * Execute the console command.
-     *
-     * @return int
+     * Draw "  Registrar ........ STATUS". Non-final lines overwrite themselves.
      */
-    public function handle()
+    protected function renderLine(string $registrar, string $status, string $style, bool $final): void
     {
-        $this->info('You are about to sync the permissions to your system.');
+        $width = min((new Terminal())->getWidth(), 100);
+        $dots = str_repeat('.', max(3, $width - mb_strlen($registrar) - mb_strlen($status) - 5));
 
-        // Ask for user confirmation before proceeding
-        if ($this->confirm('Do you wish to proceed with syncing the permissions?', true)) {
+        $line = '  '.OutputFormatter::escape($registrar)." <fg=gray>{$dots}</> <{$style}>{$status}</>";
 
-            // If the user confirms, proceed to sync permissions
-            $this->info('Syncing permissions...');
-
-            // Call the method to sync permissions
-            app(AuthManager::class)->syncPermissions();
-
-            // Provide feedback to the user
-            $this->info('Permissions have been successfully synced.');
-
-        } else {
-            // If the user cancels, provide a message
-            $this->info('Permission sync operation has been canceled.');
+        if ($final) {
+            // "\r\033[2K" returns to column 0 and clears any in-progress line.
+            $this->output->write("\r\033[2K");
+            $this->output->writeln($line);
+            return;
         }
 
-        return Command::SUCCESS;
+        $this->output->write("\r\033[2K".$line);
     }
 }

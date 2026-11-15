@@ -22,7 +22,6 @@ class Permission extends Model implements PermissionContract
 
     protected $guarded = [];
 
-
     protected static function boot()
     {
         parent::boot();
@@ -34,13 +33,15 @@ class Permission extends Model implements PermissionContract
             }
         });
 
-        static::saved(function () {
-            Cache::store(config('armor.cache_store'))->forget('permissions');
+
+        static::deleted(fn () => app(PermissionCache::class)->flushAll());
+
+        static::updated(function ($permission) {
+            if ($permission->wasChanged('name')) {
+                app(PermissionCache::class)->flushAll();
+            }
         });
 
-        static::deleted(function () {
-            Cache::store(config('armor.cache_store'))->forget('permissions');
-        });
     }
 
 

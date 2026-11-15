@@ -15,14 +15,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Delgont\Armor\Models\Permission;
 use Delgont\Armor\Exceptions\PermissionDoesNotExist;
 use Illuminate\Support\Facades\Cache;
-
+use Delgont\Armor\Support\PermissionCache;
 
 trait ModelHasPermissions
 {
 
+    protected ?array $armorPermissionSet = null;
+
+    protected function permissionCache(): PermissionCache
+    {
+        return app(PermissionCache::class);
+    }
+
      /**
      * Get the cache store for permissions.
-     *
+     * safe to remove in veriosn 1.13.0
      * @return \Illuminate\Contracts\Cache\Repository
      */
     protected function getCacheStore()
@@ -42,9 +49,22 @@ trait ModelHasPermissions
         });
     }
 
+    public static function bootModelHasPermissions()
+    {
+        static::deleting(function ($model) {
+            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
+                return;
+            }
+
+            $model->permissions()->detach();
+            $model->invalidatePermissionCache();
+        });
+    }
+
 
     /**
      * Get the permission cache prefix based on the model type.
+     * Safe to delete
      */
     protected function getPermissionCachePrefix(): string
     {
@@ -57,16 +77,18 @@ trait ModelHasPermissions
         return $lastWord . '_permission_';
     }
 
-    /**
-     * Invalidate the permission cache for the role or user.
+  /**
+     * Kept public for backward compatibility. The argument is now ignored,
+     * because the whole set is invalidated at once.
      */
-    public function invalidatePermissionCache($permissions)
+    public function invalidatePermissionCache($permissions = null)
     {
-        foreach ($permissions as $permission) {
-            $this->getCacheStore()->forget($this->getPermissionCachePrefix(). $this->id.'_'.$permission);
+        $this->armorPermissionSet = null;
+
+        if ($this->exists) {
+            $this->permissionCache()->flush($this);
         }
     }
-
     /**
      * A model may have multiple permissions.
      */
@@ -103,7 +125,21 @@ trait ModelHasPermissions
 
         return $this->permissions->contains('name', $permission->name);
     }
+    
+    /**
+     * The names of every permission this model holds directly.
+     */
+    public function permissionNames(): array
+    {
+        if (! $this->exists) {
+            return $this->permissions()->pluck('name')->all(); // unsaved model: never cache
+        }
 
+        return $this->armorPermissionSet ??= $this->permissionCache()->remember(
+            $this,
+            fn () => $this->permissions()->pluck('name')->all()
+        );
+    }
 
     public function givePermissionTo(...$permissions)
     {
@@ -209,46 +245,21 @@ trait ModelHasPermissions
 
 
 
-     /**
-     * Determine if the model may perform the given permission.
-     *
-     * @param string|int$permission
-     *
-     * @return bool
-     * @throws PermissionDoesNotExist
-     */
     public function hasPermissionTo($permission): bool
     {
-        $cacheDuration = config('armor.cache_duration', 60);
+        if (! is_string($permission)) {
+            throw new \InvalidArgumentException('Invalid permission type.');
+        }
 
-        return $this->getCacheStore()->remember(
-            $this->getPermissionCachePrefix() . $this->id . '_' . $permission,
-            $cacheDuration,
-            function () use ($permission) {
-                if (!is_string($permission)) {
-                    throw new \InvalidArgumentException('Invalid permission type.');
-                }
+        if (in_array($permission, $this->permissionNames(), true)) {
+            return true;
+        }
 
-                // Try to get all permissions from cache
-                $permissions = cache('permissions', collect());
+        if (! $this->permissionCache()->permissionExists($permission)) {
+            throw PermissionDoesNotExist::create($permission);
+        }
 
-                // Use cached permissions if available
-                $permissionModel = $permissions->firstWhere('name', $permission);
-
-                // Fallback to DB if not in cache
-                if (!$permissionModel) {
-                    $permissionModel = Permission::whereName($permission)->first();
-                }
-
-                // If still not found, throw
-                if (!$permissionModel) {
-                    throw PermissionDoesNotExist::create($permission);
-                }
-
-                // Check if user has the permission
-                return $this->permissions->contains('name', $permissionModel->name);
-            }
-        );
+        return false;
     }
 
     /**

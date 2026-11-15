@@ -1,48 +1,35 @@
 <?php
 
-namespace {{registrarNamespace}};
+namespace {{ namespace }};
 
-use Delgont\Armor\SystemActionRegistrar;
+use Delgont\Armor\PermissionRegistrar;
 
-class {{registrar}} extends SystemActionRegistrar
+class {{ class }} extends PermissionRegistrar
 {
     /**
-     * Action group name.
-     *
-     * Examples:
-     * expenses
-     * invoices
-     * contacts
+     * The group these permissions belong to.
+     * Group names are unique, so give each registrar its own.
      */
-    protected $group = '{{group}}';
+    protected $group = '{{ group }}';
 
-    // Action definitions
-    const CREATE_RECORD = 'create_record';
-
-    const UPDATE_RECORD = 'update_record';
-
-    const DELETE_RECORD = 'delete_record';
+    /*
+     * Every string constant in this class becomes a permission when you run
+     * `php artisan armor:permissions:sync`. Do not add helper constants.
+     *
+     * Values are snake_case: can_<verb>_<resource>. They are unique across
+     * ALL groups, and renaming one later creates a new permission, so pick
+     * names you can live with.
+     *
+     * const CAN_VIEW_USERS = 'can_view_users';
+     */
 
     /**
-     * Action descriptions.
+     * Descriptions keyed by permission value, shown in admin screens.
      */
     protected function descriptions(): array
     {
         return [
-            self::CREATE_RECORD => 'Create a record',
-            self::UPDATE_RECORD => 'Update a record',
-            self::DELETE_RECORD => 'Delete a record',
-        ];
-    }
-
-    /**
-     * Actions supporting undo.
-     */
-    protected function undoable(): array
-    {
-        return [
-            self::UPDATE_RECORD,
-            self::DELETE_RECORD,
+            // self::CAN_VIEW_USERS => 'View the list of users.',
         ];
     }
 }

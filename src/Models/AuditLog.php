@@ -79,9 +79,9 @@ class AuditLog extends Model
     }
 
     /**
-     * Determine whether the action modified data.
+     * Determine whether the audited action modified data.
      */
-    public function hasChanges(): bool
+    public function hasDataChanges(): bool
     {
         return ! empty($this->before_change)
             || ! empty($this->after_change);

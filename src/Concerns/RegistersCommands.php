@@ -8,7 +8,6 @@ trait RegistersCommands
     {
         $this->commands([
             \Delgont\Armor\Console\Commands\GeneratePermissions::class,
-            \Delgont\Armor\Console\Commands\MakeUserType::class,
             \Delgont\Armor\Console\Commands\MakeAddRoleIdToModelTable::class,
             \Delgont\Armor\Console\Commands\SyncPermission::class,
             \Delgont\Armor\Console\Commands\SyncRole::class,
@@ -34,6 +33,20 @@ trait RegistersCommands
             \Delgont\Armor\Console\Commands\ShowRolePermissions::class,
             \Delgont\Armor\Console\Commands\ShowPermissionGroups::class,
             \Delgont\Armor\Console\Commands\MakeSystemActionRegistrar::class,
+            
+
+            \Delgont\Armor\Console\Commands\PermissionTree::class,
+            \Delgont\Armor\Console\Commands\PermissionStatusCommand::class,
+            \Delgont\Armor\Console\Commands\CacheWarmCommand::class,
+            \Delgont\Armor\Console\Commands\CacheCheckCommand::class,
+            \Delgont\Armor\Console\Commands\DoctorCommand::class,
+            \Delgont\Armor\Console\Commands\PermissionsCleanCommand::class,
+
+            \Delgont\Armor\Console\Commands\SyncRolesCommand::class,
+            \Delgont\Armor\Console\Commands\RoleStatusCommand::class,
+            \Delgont\Armor\Console\Commands\RolesCleanCommand::class,
+            \Delgont\Armor\Console\Commands\RolesListCommand::class,
+            \Delgont\Armor\Console\Commands\RoleShowCommand::class,
         ]);
     }
 }

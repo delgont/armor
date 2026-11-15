@@ -13,6 +13,9 @@ abstract class PermissionRegistrar
     protected $permissions = null; // Permission constants or array
     protected $descriptions = null; // Descriptions of permissions
 
+    /** @var class-string<PermissionRegistrar>|null */
+    protected $parent = null;
+
    /**
      * Get the name of the permission group.
      *
@@ -22,6 +25,32 @@ abstract class PermissionRegistrar
     {
         return $this->group;
     }
+
+    public function groupName(): string
+    {
+        return $this->getGroup() ?? static::class;
+    }
+
+    public function getParent(): ?string
+    {
+        return $this->parent;
+    }
+
+    protected function parentRegistrar(): ?self
+    {
+        if ($this->parent === null) {
+            return null;
+        }
+
+        if (! is_subclass_of($this->parent, self::class)) {
+            throw new InvalidArgumentException(
+                static::class." declares parent {$this->parent}, which is not a PermissionRegistrar."
+            );
+        }
+
+        return app($this->parent);
+    }
+
 
     public function getPermissions()
     {
@@ -58,17 +87,16 @@ abstract class PermissionRegistrar
     }
 
 
-   /**
-     * Synchronize permissions and groups with the database.
-     */
-    public function sync(): void
-    {
-        $permissionGroup = $this->syncPermissionGroup();
 
-        $this->syncPermissions($permissionGroup);
+    public function sync(?callable $onProgress = null): void
+    {
+        $group = $this->syncGroup();
+
+        $this->syncPermissions($group, $onProgress);
 
         event(new PermissionGroupSynchronized($this->getPermissions()));
     }
+
 
     /**
      * Synchronize the permission group.
@@ -88,7 +116,7 @@ abstract class PermissionRegistrar
      *
      * @param PermissionGroup $permissionGroup
      */
-    private function syncPermissions(PermissionGroup $permissionGroup): void
+    private function syncPermissionsDe(PermissionGroup $permissionGroup): void
     {
         foreach ($this->getPermissions() as $index => $permission) {
             Permission::updateOrCreate(
@@ -103,6 +131,69 @@ abstract class PermissionRegistrar
                 ]
             );
         }
+    }
+
+    private function syncPermissions(PermissionGroup $permissionGroup, ?callable $onProgress = null): void
+    {
+        $permissions = $this->getPermissions();
+        $total = count($permissions);
+        $done = 0;
+
+        foreach ($permissions as $index => $permission) {
+            Permission::updateOrCreate(
+                [
+                    'name' => $permission,
+                    'permission_group_id' => $permissionGroup->id,
+                ],
+                [
+                    'description' => $this->getDescriptions()[$permission] ?? null,
+                    'permission_group_id' => $permissionGroup->id,
+                    'order' => (int)$index + 1,
+                ]
+            );
+
+            if ($onProgress) {
+                $onProgress(++$done, $total);
+            }
+        }
+    }
+
+    private function syncPermissionsByDefinitions(PermissionGroup $permissionGroup, ?callable $onProgress = null): void
+    {
+        $definitions = $this->permissionDefinitions();
+        $total = count($definitions);
+        $done = 0;
+
+        foreach ($definitions as $name => $definition) {
+            Permission::updateOrCreate(
+                ['name' => $name, 'permission_group_id' => $permissionGroup->id],
+                $definition + ['permission_group_id' => $permissionGroup->id]
+            );
+
+            if ($onProgress) {
+                $onProgress(++$done, $total);
+            }
+        }
+    }
+
+    /**
+     * What sync() will write for each permission, keyed by permission name.
+     *
+     * @return array<string, array{description: ?string, order: int}>
+     */
+    public function permissionDefinitions(): array
+    {
+        $descriptions = $this->getDescriptions();
+        $definitions = [];
+
+        foreach ($this->getPermissions() as $index => $permission) {
+            $definitions[$permission] = [
+                'description' => $descriptions[$permission] ?? null,
+                'order'       => (int) $index + 1,
+            ];
+        }
+
+        return $definitions;
     }
 
     /**
@@ -122,4 +213,29 @@ abstract class PermissionRegistrar
    {
        return [];
    }
+
+    /**
+     * Ensure this registrar's group exists with the correct parent,
+     * creating ancestor groups first. Does not sync permissions.
+     *
+     * @param  string[]  $trail  Registrars already visited (cycle guard)
+     */
+    public function syncGroup(array $trail = []): PermissionGroup
+    {
+        if (in_array(static::class, $trail, true)) {
+            throw new LogicException(
+                'Circular registrar parent chain: '.implode(' -> ', [...$trail, static::class])
+            );
+        }
+
+        $parentGroup = $this->parentRegistrar()?->syncGroup([...$trail, static::class]);
+
+        return PermissionGroup::updateOrCreate(
+            ['name' => $this->groupName()],
+            [
+                'registrar' => static::class,
+                'parent_id' => $parentGroup?->id,
+            ]
+        );
+    }
 }

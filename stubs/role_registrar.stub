@@ -1,10 +1,38 @@
 <?php
 
-namespace App;
+namespace {{ namespace }};
 
-use Delgont\Armor\RoleRegistrar as BaseRoleRegistrar;
+use Delgont\Armor\RoleRegistrar;
 
-class {{registrar}} extends BaseRoleRegistrar
+class {{ class }} extends RoleRegistrar
 {
-    
+    /**
+     * The group these roles belong to.
+     *
+     * Roles in a group are managed by this class: `armor:roles:status`
+     * and `armor:roles:clean` only look inside groups that have a registrar.
+     */
+    protected $group = '{{ group }}';
+
+    /*
+     * Permissions every role in this class receives. Use permission
+     * registrars and/or group names, never individual permission names.
+     * Run `armor:permissions:sync` before `armor:roles:sync`.
+     *
+     * protected $permissionRegistrars = [\App\Permissions\UserPermissionRegistrar::class];
+     * protected $permissionGroups     = ['User Permissions'];
+     *
+     * false (default): only adds permissions, never removes any.
+     * true: roles match this declaration exactly, so any other
+     * permission on them is removed on sync.
+     * protected $strict = false;
+     */
+
+    /*
+     * Every string constant in this class becomes a role when you run
+     * `php artisan armor:roles:sync`. Do not add helper constants.
+     *
+     * const MANAGER    = 'manager';
+     * const SUPERVISOR = 'supervisor';
+     */
 }

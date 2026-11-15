@@ -23,6 +23,7 @@ use Delgont\Armor\Concerns\ModelHasPermissions;
 use Delgont\Armor\Models\Permission;
 use Delgont\Armor\Models\RoleGroup;
 use Delgont\Armor\Contracts\Role as RoleContract;
+    use Delgont\Armor\Support\PermissionCache;
 
 use Illuminate\Support\Str;
 
@@ -41,14 +42,14 @@ class Role extends Model
                 $role->uuid = (string) Str::uuid();
             }
         });
+        static::deleted(fn () => app(PermissionCache::class)->flushAll());
+
     }
-
-    protected $permissionsCachePrefix = 'role_permissions_';
-
 
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class, 'role_has_permissions', 'role_id', 'permission_id');
+        return $this->belongsToMany(Permission::class, 'role_has_permissions', 'role_id', 'permission_id')
+            ->withTimestamps();
     }
 
 

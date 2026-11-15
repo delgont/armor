@@ -2,191 +2,85 @@
 /**
  * Delgont Armor  (https://delgont.co.ug).
  *
- * @link https://github.com/delgont/armor source repository
- *
- * @copyright Copyright (c) 2024. Delgont Technologies Co. Ltd (https://delgont.co.ug)
- *
  * @license https://opensource.org/licenses/MIT MIT License
  */
 
-
 namespace Delgont\Armor;
 
-use Illuminate\Support\ServiceProvider;
-
-use Illuminate\Routing\Router;
-
 use Delgont\Armor\Concerns\RegistersCommands;
-
-use Delgont\Armor\Http\Middleware\PermissionMiddleware;
-use Delgont\Armor\Http\Middleware\RolePermissionMiddleware;
-
-use Delgont\Armor\Http\Middleware\RoleMiddleware;
-use Delgont\Armor\Http\Middleware\UserTypeMiddleware;
-use Delgont\Armor\Http\Middleware\PermissionViaSingleRole;
-use Delgont\Armor\Http\Middleware\DetectIpChange;
-use Delgont\Armor\Http\Middleware\CheckSuspended;
-
-
-use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\Support\Facades\Blade;
-
-use Illuminate\Support\Str;
-
-use Illuminate\Support\Facades\Event;
 use Delgont\Armor\Events\AuditActivityLogged;
+use Delgont\Armor\Http\Middleware\CheckSuspended;
+use Delgont\Armor\Http\Middleware\DetectIpChange;
+use Delgont\Armor\Http\Middleware\PermissionMiddleware;
+use Delgont\Armor\Http\Middleware\PermissionViaSingleRole;
+use Delgont\Armor\Http\Middleware\RoleMiddleware;
+use Delgont\Armor\Http\Middleware\RolePermissionMiddleware;
+use Delgont\Armor\Http\Middleware\TrackPageAccess;
+use Delgont\Armor\Http\Middleware\UserTypeMiddleware;
 use Delgont\Armor\Listeners\LogAuditActivity;
+use Delgont\Armor\Models\Role;
+use Delgont\Armor\Support\BladeDirectives;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\ServiceProvider;
 
 class ArmorServiceProvider extends ServiceProvider
 {
     use RegistersCommands;
-    /**
-     * Register services.
-     *
-     * @return void
-     */
+
+    /** Middleware alias => class. */
+    protected array $middleware = [
+        'permission'              => PermissionMiddleware::class,
+        'role.permission'         => RolePermissionMiddleware::class,
+        'role'                    => RoleMiddleware::class,
+        'hasRole'                 => RoleMiddleware::class,
+        'permissionViaSingleRole' => PermissionViaSingleRole::class,
+        'detect.ip.change'        => DetectIpChange::class,
+        'usertype'                => UserTypeMiddleware::class,
+        'check.suspended'         => CheckSuspended::class,
+        'track.page-access'       => TrackPageAccess::class,
+    ];
+
     public function register()
     {
-
-
         $this->registerCommands();
-
     }
 
-    /**
-     * Bootstrap services.
-     *
-     * @return void
-     */
     public function boot()
     {
+        // Package defaults. App values (published file, .env) take priority.
+        $this->mergeConfigFrom(__DIR__.'/../config/armor.php', 'armor');
+
+        $this->registerMiddleware();
+        $this->registerMigrations();
         $this->registerEvents();
+        $this->registerPermissionables();
 
-        $this->publishes([
-            __DIR__.'/../config/armor.php' => config_path('armor.php')
-        ], 'armor-config');
+        BladeDirectives::register();
+    }
 
+
+    protected function registerMiddleware(): void
+    {
         $router = $this->app->make(Router::class);
 
-        $router->aliasMiddleware('permission', PermissionMiddleware::class);
-        $router->aliasMiddleware('role.permission', RolePermissionMiddleware::class);
-
-        $router->aliasMiddleware('role', RoleMiddleware::class);
-        $router->aliasMiddleware('hasRole', RoleMiddleware::class);
-        $router->aliasMiddleware('permissionViaSingleRole', PermissionViaSingleRole::class);
-        $router->aliasMiddleware('detect.ip.change', DetectIpChange::class);
-
-        $router->aliasMiddleware('usertype', UserTypeMiddleware::class);
-        $router->aliasMiddleware('check.suspended', CheckSuspended::class);
-        $router->aliasMiddleware('track.page-access',  \Delgont\Armor\Http\Middleware\TrackPageAccess::class);
-
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
-        $this->registerBladeExtensions();
-
-
-        Blade::directive('role', function ($arguments) {
-            list($role, $guard) = explode(',', $arguments.',');
-            return "<?php if(auth({$guard})->check() && auth({$guard})->user()->hasRole({$role})): ?>";
-        });
-
-        Blade::directive('elserole', function ($arguments) {
-            list($role, $guard) = explode(',', $arguments.',');
-
-            return "<?php elseif(auth({$guard})->check() && auth({$guard})->user()->hasRole({$role})): ?>";
-        });
-
-        Blade::directive('endrole', function () {
-            return '<?php endif; ?>';
-        });
-
-        Armor::registerPermissionables([
-            'role' => \Delgont\Armor\Models\Role::class
-        ]);
-
+        foreach ($this->middleware as $alias => $class) {
+            $router->aliasMiddleware($alias, $class);
+        }
     }
 
-
-    protected function registerBladeExtensions()
+    protected function registerMigrations(): void
     {
-        Blade::directive('hasRole', function ($arguments) {
-            list($role, $guard) = explode(',', $arguments.',');
-            return "<?php if(auth({$guard})->user()->hasRole({$role})): ?>";
-        });
-
-        Blade::directive('elsehasRole', function ($arguments) {
-            list($role, $guard) = explode(',', $arguments.',');
-
-            return "<?php elseif(auth({$guard})->user()->hasRole({$role})): ?>";
-        });
-
-        Blade::directive('endhasRole', function () {
-            return '<?php endif; ?>';
-        });
-
-
-        Blade::directive('usertype', function ($usertypes, $guard = 'null') {
-            return "<?php
-                if (auth($guard)->check() && auth($guard)->user()->user_type !== null &&
-                    in_array(
-                        strtolower(last(explode('\\\\', auth($guard)->user()->user_type))),
-                        explode('|', {$usertypes})
-                    )
-                ):
-            ?>";
-        });
-
-        Blade::directive('elseusertype', function () {
-            return '<?php else: ?>';
-        });
-
-        Blade::directive('endusertype', function () {
-            return '<?php endif; ?>';
-        });
-
-
-        // New permission directive with delimiter support and default guard
-        Blade::directive('can', function ($arguments) {
-            list($permissions, $guard) = explode(',', $arguments.',');
-            return "<?php if( auth({$guard})->check() && auth({$guard})->user()->hasAnyPermission(explode('|', {$permissions})) ): ?>";
-        });
-
-        Blade::directive('elsecan', function () {
-            return '<?php else: ?>';
-        });
-
-        Blade::directive('endcan', function () {
-            return '<?php endif; ?>';
-        });
-
-
-        // User role directive - check if the user
-        Blade::directive('rolecan', function ($arguments) {
-            list($permissions, $guard) = explode(',', $arguments.',');
-            return "<?php if( auth({$guard})->check() && auth({$guard})->user()->role && auth({$guard})->user()->role->hasAnyPermission(explode('|', {$permissions})) ): ?>";
-        });
-
-        Blade::directive('elserolecan', function () {
-            return '<?php else: ?>';
-        });
-
-        Blade::directive('endrolecan', function () {
-            return '<?php endif; ?>';
-        });
-
-
-
-
-
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 
-    /**
-     * Register package-specific events.
-     */
     protected function registerEvents(): void
     {
         Event::listen(AuditActivityLogged::class, LogAuditActivity::class);
     }
 
-
+    protected function registerPermissionables(): void
+    {
+        Armor::registerPermissionables(['role' => Role::class]);
+    }
 }
