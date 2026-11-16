@@ -52,7 +52,7 @@ abstract class RoleRegistrar
 
     public function declaresPermissions(): bool
     {
-        return $this->permissionRegistrars !== [] || $this->permissionGroups !== [];
+        return $this->permissionRegistrars() !== [] || $this->permissionGroups !== [];
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class RoleRegistrar
         $names = [];
         $granted = [];
 
-        foreach ((array) $this->permissionRegistrars as $class) {
+        foreach ((array) $this->permissionRegistrars() as $class) {
             $valid = is_string($class) && class_exists($class)
                 && (is_subclass_of($class, PermissionRegistrar::class) || is_subclass_of($class, Permission::class));
 
@@ -137,34 +137,105 @@ abstract class RoleRegistrar
 
     public function sync(?callable $onProgress = null)
     {
-        // 1. Validate first. A bad declaration must not leave half the roles written.
-        $grants = $this->declaresPermissions() ? $this->grantedPermissions() : [];
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve permissions
+        |--------------------------------------------------------------------------
+        |
+        | Strict registrars own their permissions entirely.
+        | Non-strict registrars leave permissions under GUI/manual management.
+        |
+        */
+        $grants = $this->declaresPermissions()
+            ? $this->grantedPermissions()
+            : [];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Safety check
+        |--------------------------------------------------------------------------
+        |
+        | A strict registrar must always resolve permissions.
+        | Otherwise sync() could accidentally strip all permissions from
+        | critical roles such as System, Master or Administrator.
+        |
+        */
         if ($this->strict && $grants === []) {
-            throw new RuntimeException(static::class.' is strict but grants no permissions. Refusing to strip its roles.');
+            throw new RuntimeException(
+                static::class.' is strict but grants no permissions. Refusing to strip its roles.'
+            );
         }
 
-        // 2. Write everything or nothing.
+        /*
+        |--------------------------------------------------------------------------
+        | Transaction
+        |--------------------------------------------------------------------------
+        |
+        | Either everything succeeds or nothing changes.
+        |
+        */
         $changes = DB::transaction(function () use ($grants, $onProgress) {
+
             $group = $this->syncGroup();
             $names = $this->roleNames();
+
             $changes = [];
 
             foreach ($names as $i => $name) {
-                $role = Role::firstOrNew(['name' => $name]);
-                $role->forceFill(['role_group_id' => $group?->id])->save();
 
-                if ($grants !== []) {
+                /*
+                |--------------------------------------------------------------------------
+                | Create or update role
+                |--------------------------------------------------------------------------
+                */
+                $role = Role::firstOrNew([
+                    'name' => $name,
+                ]);
+
+                $role->forceFill([
+                    'role_group_id' => $group?->id,
+                ])->save();
+
+                /*
+                |--------------------------------------------------------------------------
+                | Strict mode
+                |--------------------------------------------------------------------------
+                |
+                | The registrar completely owns permissions.
+                |
+                | If extra permissions exist in the database, they are removed.
+                |
+                */
+                if ($this->strict) {
+
                     $ids = array_values($grants);
-                    $result = $this->strict
-                        ? $role->permissions()->sync($ids)
-                        : $role->permissions()->syncWithoutDetaching($ids);
 
-                    if ($result['attached'] || $result['detached']) {
+                    $result = $role->permissions()->sync($ids);
+
+                    if (
+                        ! empty($result['attached']) ||
+                        ! empty($result['detached']) ||
+                        ! empty($result['updated'])
+                    ) {
                         $changes[] = [$role, $result];
                     }
                 }
 
+                /*
+                |--------------------------------------------------------------------------
+                | Non-strict mode
+                |--------------------------------------------------------------------------
+                |
+                | Permissions are managed manually.
+                |
+                | Sync only:
+                |   - creates the role
+                |   - updates the role group
+                |
+                | It NEVER adds permissions.
+                | It NEVER removes permissions.
+                |
+                */
                 if ($onProgress) {
                     $onProgress($i + 1, count($names));
                 }
@@ -173,17 +244,35 @@ abstract class RoleRegistrar
             return $changes;
         });
 
-        // 3. After commit: refresh caches and announce, so listeners never see uncommitted data.
+        /*
+        |--------------------------------------------------------------------------
+        | After commit
+        |--------------------------------------------------------------------------
+        |
+        | Refresh caches and raise events only after the transaction commits.
+        |
+        */
         foreach ($changes as [$role, $result]) {
+
             $role->invalidatePermissionCache();
 
-            foreach (PermissionModel::whereIn('id', $result['attached'])->get() as $permission) {
-                event(new PermissionGranted($role, $permission, $permission->group ?? null));
+            foreach (
+                PermissionModel::whereIn('id', $result['attached'] ?? [])->get()
+                as $permission
+            ) {
+                event(
+                    new PermissionGranted(
+                        $role,
+                        $permission,
+                        $permission->group ?? null
+                    )
+                );
             }
         }
     }
 
-    public function cache()
+    protected function permissionRegistrars(): array
     {
+        return $this->permissionRegistrars;
     }
 }
