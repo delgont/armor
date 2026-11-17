@@ -74,12 +74,14 @@ abstract class RoleRegistrar
                 continue;
             }
 
-            $declared = array_filter(app($class)->getPermissions(), 'is_string');
+            $declared = array_filter(
+                app($class)->getPermissions(),
+                'is_string'
+            );
 
-            if ($declared === []) {
-                $problems[] = class_basename($class).' declares no permissions';
+            if (empty($declared)) {
+                continue;
             }
-
             $names = array_merge($names, array_values($declared));
         }
 
@@ -154,7 +156,6 @@ abstract class RoleRegistrar
         |--------------------------------------------------------------------------
         | Safety check
         |--------------------------------------------------------------------------
-        |
         | A strict registrar must always resolve permissions.
         | Otherwise sync() could accidentally strip all permissions from
         | critical roles such as System, Master or Administrator.

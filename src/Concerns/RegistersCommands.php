@@ -47,6 +47,11 @@ trait RegistersCommands
             \Delgont\Armor\Console\Commands\RolesCleanCommand::class,
             \Delgont\Armor\Console\Commands\RolesListCommand::class,
             \Delgont\Armor\Console\Commands\RoleShowCommand::class,
+
+            \Delgont\Armor\Console\Commands\SyncActionsCommand::class,
+            \Delgont\Armor\Console\Commands\ActionsValidateCommand::class,
+            \Delgont\Armor\Console\Commands\ActionsListCommand::class,
+            \Delgont\Armor\Console\Commands\ActionsStatusCommand::class,
         ]);
     }
 }

@@ -63,7 +63,6 @@ class ArmorServiceProvider extends ServiceProvider
     protected function registerMiddleware(): void
     {
         $router = $this->app->make(Router::class);
-
         foreach ($this->middleware as $alias => $class) {
             $router->aliasMiddleware($alias, $class);
         }

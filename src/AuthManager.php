@@ -46,50 +46,50 @@ class AuthManager
 
 
 
-public function syncPermissions(?callable $report = null): string
-{
-    $report ??= static fn () => null;
-    $registrars = config('armor.permission_registrars');
+    public function syncPermissions(?callable $report = null): string
+    {
+        $report ??= static fn () => null;
+        $registrars = config('armor.permission_registrars');
 
-    if (! is_array($registrars) || count($registrars) === 0) {
-        return 'There are no permissions to sync';
-    }
-
-    $allPermissions = [];
-    $failed = 0;
-
-    foreach (array_unique($registrars) as $registrar) {
-        if (! class_exists($registrar)) {
-            Log::warning("Permission registrar class {$registrar} does not exist.");
-            $report('skipped', $registrar);
-            continue;
+        if (! is_array($registrars) || count($registrars) === 0) {
+            return 'There are no permissions to sync';
         }
 
-        $report('start', $registrar);
+        $allPermissions = [];
+        $failed = 0;
 
-        try {
-            $instance = app($registrar);
+        foreach (array_unique($registrars) as $registrar) {
+            if (! class_exists($registrar)) {
+                Log::warning("Permission registrar class {$registrar} does not exist.");
+                $report('skipped', $registrar);
+                continue;
+            }
 
-            $instance->sync(
-                fn (int $done, int $total) => $report('progress', $registrar, $done, $total)
-            );
+            $report('start', $registrar);
 
-            $allPermissions = array_merge($allPermissions, $instance->getPermissions());
+            try {
+                $instance = app($registrar);
 
-            $report('done', $registrar);
-        } catch (Throwable $e) {
-            $failed++;
-            Log::error("Permission registrar {$registrar} failed to sync: ".$e->getMessage());
-            $report('failed', $registrar, $e);
+                $instance->sync(
+                    fn (int $done, int $total) => $report('progress', $registrar, $done, $total)
+                );
+
+                $allPermissions = array_merge($allPermissions, $instance->getPermissions());
+
+                $report('done', $registrar);
+            } catch (Throwable $e) {
+                $failed++;
+                Log::error("Permission registrar {$registrar} failed to sync: ".$e->getMessage());
+                $report('failed', $registrar, $e);
+            }
         }
+
+        event(new PermissionsSynchronized($allPermissions));
+
+        return $failed > 0
+            ? "Permissions synchronized with {$failed} failure(s)"
+            : 'Permissions successfully synchronized';
     }
-
-    event(new PermissionsSynchronized($allPermissions));
-
-    return $failed > 0
-        ? "Permissions synchronized with {$failed} failure(s)"
-        : 'Permissions successfully synchronized';
-}
 
 
     public function syncRoles(?callable $report = null): string
@@ -127,6 +127,61 @@ public function syncPermissions(?callable $report = null): string
         return $failed > 0
             ? "Roles synchronized with {$failed} failure(s)"
             : 'roles synchronized successfully';
+    }
+
+    /**
+     * Sync every registered system action registrar.
+     * One failing registrar never stops the others.
+     */
+    public function syncActions(?callable $report = null): string
+    {
+        $report ??= static fn () => null;
+        $registrars = Armor::getActionRegistrars();
+
+        if ($registrars === []) {
+            return 'There are no actions to sync';
+        }
+
+        $failed = 0;
+        $seen = [];
+
+        foreach ($registrars as $registrar) {
+            $label = is_string($registrar) ? $registrar : json_encode($registrar);
+
+            // Skip duplicates, and entries that are not usable class names.
+            if (isset($seen[$label])) {
+                continue;
+            }
+            $seen[$label] = true;
+
+            if (! is_string($registrar) || ! class_exists($registrar)) {
+                Log::warning("Action registrar {$label} does not exist.");
+                $report('skipped', $label, 'class does not exist');
+                continue;
+            }
+
+            if (! is_subclass_of($registrar, SystemActionRegistrar::class)) {
+                $report('skipped', $registrar, 'does not extend SystemActionRegistrar');
+                continue;
+            }
+
+            $report('start', $registrar);
+
+            try {
+                $instance = app($registrar);
+                $instance->sync();
+
+                $report('done', $registrar, count($instance->getActions()));
+            } catch (Throwable $e) {
+                $failed++;
+                Log::error("Action registrar {$registrar} failed to sync: ".$e->getMessage());
+                $report('failed', $registrar, $e);
+            }
+        }
+
+        return $failed > 0
+            ? "Actions synchronized with {$failed} failure(s)"
+            : 'Actions synchronized successfully';
     }
 
 }

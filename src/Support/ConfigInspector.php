@@ -91,7 +91,7 @@ class ConfigInspector
         // Registrars
         $this->registrars('permission_registrars', [PermissionRegistrar::class, Permission::class], $add);
         $this->registrars('role_registrars', [RoleRegistrar::class], $add);
-        $this->registrars('action_registrars', [], $add);
+        $this->registrars('action_registrars', [\Delgont\Armor\SystemActionRegistrar::class], $add);
 
         // Permissionables: shape only. The trait check lives in the doctor's database section.
         $permissionables = $cfg['permissionables'] ?? [];
